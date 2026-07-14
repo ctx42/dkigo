@@ -44,9 +44,25 @@ fi
 
 rev="$(git -C "$ROOT" describe --tags --always)"
 
+# A release build has HEAD sitting exactly on a v* tag; a develop push does not
+# (git describe would append -<n>-g<sha>). Only releases also get the moving
+# `latest` tag.
+is_release=0
+if git -C "$ROOT" describe --tags --exact-match --match 'v*' >/dev/null 2>&1; then
+	is_release=1
+fi
+
 for target in "${targets[@]}"; do
 	image="$C42_REG_REPO/dkigo-$target:$rev"
 	echo "[dkigo] building $image"
+
+	# Release builds are additionally tagged `latest`.
+	tags=(-t "$image")
+	if [ "$is_release" = "1" ]; then
+		latest="$C42_REG_REPO/dkigo-$target:latest"
+		echo "[dkigo] tagging $latest"
+		tags+=(-t "$latest")
+	fi
 
 	# Per-target GitHub Actions cache (mode=max caches the intermediate builder
 	# stages too, where the expensive tool installs live). Off unless requested.
@@ -73,6 +89,6 @@ for target in "${targets[@]}"; do
 		--target "$target" \
 		"${cache[@]}" \
 		"${output[@]}" \
-		-t "$image" \
+		"${tags[@]}" \
 		"$ROOT"
 done
