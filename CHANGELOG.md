@@ -1,3 +1,6 @@
+## v0.4.0 (Wed, 15 Jul 2026 18:58:17 UTC)
+- chore(deps): bump gmtask to v0.6.0.
+
 ## v0.3.0 (Wed, 15 Jul 2026 08:13:44 UTC)
 - chore(deps): bump gmtask and testing versions.
 
