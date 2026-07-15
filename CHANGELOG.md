@@ -1,3 +1,6 @@
+## v0.3.0 (Wed, 15 Jul 2026 08:13:44 UTC)
+- chore(deps): bump gmtask and testing versions.
+
 ## v0.2.0 (Tue, 14 Jul 2026 14:10:38 UTC)
 - feat(build): tag release images as latest.
 
