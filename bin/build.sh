@@ -7,7 +7,7 @@
 # Runs from any working directory — paths resolve relative to this script.
 #
 # Usage:
-#   ./bin/build.sh          # build all targets in C42_BLD_TARGETS
+#   ./bin/build.sh          # build all targets in C42_BLD_IMG_TARGETS
 #   ./bin/build.sh base     # build only the given target(s)
 #
 # Optional environment variables (unset = plain local build into the daemon):
@@ -35,14 +35,25 @@ set -a
 . "$CONF"
 set +a
 
-# Targets: command-line arguments override C42_BLD_TARGETS.
+# Targets: command-line arguments override C42_BLD_IMG_TARGETS.
 if [ "$#" -gt 0 ]; then
 	targets=("$@")
 else
-	targets=(${C42_BLD_TARGETS//,/ })
+	targets=(${C42_BLD_IMG_TARGETS//,/ })
 fi
 
 rev="$(git -C "$ROOT" describe --tags --always)"
+
+# Build date as RFC3339 with a three-digit fraction - the layout xdef renders
+# (xdef.BldDateStr), which keeps every date the same width. %N is nanoseconds;
+# not every date implementation honours the %3N width flag, so truncate here
+# and fall back to a zero fraction when %N produced nothing usable.
+bld_date="$(date -u +%Y-%m-%dT%H:%M:%S.%N)"
+if [ "${#bld_date}" -eq 29 ]; then
+	bld_date="${bld_date:0:23}Z"
+else
+	bld_date="$(date -u +%Y-%m-%dT%H:%M:%S).000Z"
+fi
 
 # A release build has HEAD sitting exactly on a v* tag; a develop push does not
 # (git describe would append -<n>-g<sha>). Only releases also get the moving
@@ -80,8 +91,7 @@ for target in "${targets[@]}"; do
 
 	docker buildx build \
 		$(sed -nE 's/^([A-Za-z_][A-Za-z0-9_]*)=.*/--build-arg \1/p' "$CONF") \
-		--build-arg C42_BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-		--build-arg C42_CCID="$rev" \
+		--build-arg C42_BLD_DATE="$bld_date" \
 		--build-arg C42_SCM_HASH="$(git -C "$ROOT" rev-parse --short HEAD)" \
 		--build-arg C42_SCM_REV="$rev" \
 		--build-arg C42_SCM_REPO="https://github.com/ctx42/dkigo" \

@@ -6,7 +6,7 @@ name: release
 # The image tag is derived from `git describe --tags`: tag v1.2.3 publishes
 # ghcr.io/ctx42/dkigo-<target>:v1.2.3, while a develop push (no tag on the
 # commit) publishes ghcr.io/ctx42/dkigo-<target>:<short-sha> for every target
-# in C42_BLD_TARGETS (see configs/project.conf).
+# in C42_BLD_IMG_TARGETS (see configs/project.conf).
 on:
   push:
     branches:

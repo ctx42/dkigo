@@ -10,9 +10,9 @@
 coverage.*
 
 # Project temp / build / release
+# Note: bin/ is NOT ignored - it holds the tracked build.sh and push.sh.
 tmp/
 dist/
-bin/
 
 # Go workspace (not used by this module)
 go.work

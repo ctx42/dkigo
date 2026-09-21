@@ -7,7 +7,7 @@
 # Runs from any working directory — paths resolve relative to this script.
 #
 # Usage:
-#   ./bin/push.sh           # push all targets in C42_BLD_TARGETS
+#   ./bin/push.sh           # push all targets in C42_BLD_IMG_TARGETS
 #   ./bin/push.sh base      # push only the given target(s)
 #
 # CI builds with C42_BLD_PUSH=1 and does not need this script; use it for the
@@ -26,11 +26,11 @@ set -a
 . "$CONF"
 set +a
 
-# Targets: command-line arguments override C42_BLD_TARGETS.
+# Targets: command-line arguments override C42_BLD_IMG_TARGETS.
 if [ "$#" -gt 0 ]; then
 	targets=("$@")
 else
-	targets=(${C42_BLD_TARGETS//,/ })
+	targets=(${C42_BLD_IMG_TARGETS//,/ })
 fi
 
 rev="$(git -C "$ROOT" describe --tags --always)"

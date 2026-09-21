@@ -9,7 +9,7 @@
 # "src-base" and "src-test" are intermediates for the test image - use "test".
 # ==============================================================================
 ARG C42_BLD_IMG_BASE
-ARG C42_BLD_IMG_MICRO
+ARG C42_BLD_IMG_RUNTIME
 FROM $C42_BLD_IMG_BASE AS src-base
 
 # Configure private repositories.
@@ -24,7 +24,7 @@ EOF
 ARG C42_CTR_ROOT=/ctx42
 
 # Project directory. This is where you should bind or copy project files.
-ARG C42_CTR_PROJECT_ROOT=$C42_CTR_ROOT/project
+ARG C42_CTR_PRJ_ROOT=$C42_CTR_ROOT/project
 
 # The directory to point GOPATH to.
 ARG C42_BLD_GOPATH=$C42_CTR_ROOT/go
@@ -45,7 +45,7 @@ ARG C42_CTR_ENTRYPOINT=$C42_CTR_ROOT/entrypoint
 ARG C42_GOPRIVATE="github.com/ctx42"
 
 ENV C42_CTR_ROOT=$C42_CTR_ROOT \
-    C42_CTR_PROJECT_ROOT=$C42_CTR_PROJECT_ROOT \
+    C42_CTR_PRJ_ROOT=$C42_CTR_PRJ_ROOT \
     GOPATH=$C42_BLD_GOPATH \
     GOCACHE=$C42_BLD_GOCACHE \
     GOBIN=$C42_BLD_GOBIN \
@@ -56,8 +56,8 @@ ENV C42_CTR_ROOT=$C42_CTR_ROOT \
 
 RUN mkdir -p $C42_CTR_ROOT && \
     chmod go+rwx $C42_CTR_ROOT && \
-    mkdir -p $C42_CTR_PROJECT_ROOT && \
-    chmod go+rwx $C42_CTR_PROJECT_ROOT && \
+    mkdir -p $C42_CTR_PRJ_ROOT && \
+    chmod go+rwx $C42_CTR_PRJ_ROOT && \
     mkdir -p $C42_BLD_GOPATH && \
     chmod go+rwx $C42_BLD_GOPATH && \
     mkdir -p $C42_BLD_GOBIN && \
@@ -81,7 +81,7 @@ RUN microdnf -y install wget && \
 COPY scripts/keep_ctr_alive.sh $C42_CTR_BIN
 COPY scripts/run_scripts.sh $C42_CTR_BIN
 
-WORKDIR $C42_CTR_PROJECT_ROOT
+WORKDIR $C42_CTR_PRJ_ROOT
 
 # ==============================================================================
 # Creates image with compilation and test tools.
@@ -113,7 +113,7 @@ EOF
 ARG C42_CTR_ROOT=/ctx42
 
 # Project directory. This is where you should bind or copy project files.
-ARG C42_CTR_PROJECT_ROOT=$C42_CTR_ROOT/project
+ARG C42_CTR_PRJ_ROOT=$C42_CTR_ROOT/project
 
 # The directory to point GOPATH to.
 ARG C42_BLD_GOPATH=$C42_CTR_ROOT/go
@@ -131,7 +131,7 @@ ARG C42_CTR_BIN=$C42_CTR_ROOT/bin
 ARG C42_CTR_ENTRYPOINT=$C42_CTR_ROOT/entrypoint
 
 ENV C42_CTR_ROOT=$C42_CTR_ROOT \
-    C42_CTR_PROJECT_ROOT=$C42_CTR_PROJECT_ROOT \
+    C42_CTR_PRJ_ROOT=$C42_CTR_PRJ_ROOT \
     GOPATH=$C42_BLD_GOPATH \
     GOCACHE=$C42_BLD_GOCACHE \
     GOBIN=$C42_BLD_GOBIN \
@@ -140,7 +140,7 @@ ENV C42_CTR_ROOT=$C42_CTR_ROOT \
     C42_CTR_ENTRYPOINT=$C42_CTR_ENTRYPOINT \
     PATH="$PATH:/usr/local/go/bin:$C42_BLD_GOBIN:$C42_CTR_BIN"
 
-WORKDIR $C42_CTR_PROJECT_ROOT
+WORKDIR $C42_CTR_PRJ_ROOT
 
 RUN microdnf -y install shadow-utils vim bash-completion gcc gcc-c++ kernel-devel make gzip xz curl-minimal git && \
     microdnf -y clean all
@@ -183,7 +183,7 @@ RUN CGO_ENABLED=0 go install github.com/golangci/golangci-lint/v2/cmd/golangci-l
     rm -rf $GOPATH/* && rm -rf $GOCACHE/*
 
 # Pull the shared golangci-lint configuration. It lives at the container root so
-# golangci-lint auto-discovers it from $C42_CTR_PROJECT_ROOT as a fallback when a
+# golangci-lint auto-discovers it from $C42_CTR_PRJ_ROOT as a fallback when a
 # project provides no .golangci.yml of its own.
 ARG C42_BLD_XDEV_VERSION
 RUN wget https://raw.githubusercontent.com/ctx42/xdev/$C42_BLD_XDEV_VERSION/.golangci.yml -O $C42_CTR_ROOT/.golangci.yml
@@ -227,7 +227,7 @@ RUN microdnf -y install ca-certificates wget && \
 # "base-builder". Do not add microdnf here - there is none.
 # NOTE: This is the image you want to use instead of "src-base".
 # ==============================================================================
-FROM $C42_BLD_IMG_MICRO AS base
+FROM $C42_BLD_IMG_RUNTIME AS base
 
 # Configure private repositories (kept for parity with the test image).
 COPY <<-EOF /etc/gitconfig
@@ -241,7 +241,7 @@ EOF
 ARG C42_CTR_ROOT=/ctx42
 
 # Project directory. This is where you should bind or copy project files.
-ARG C42_CTR_PROJECT_ROOT=$C42_CTR_ROOT/project
+ARG C42_CTR_PRJ_ROOT=$C42_CTR_ROOT/project
 
 # The directory to point GOPATH to.
 ARG C42_BLD_GOPATH=$C42_CTR_ROOT/go
@@ -262,7 +262,7 @@ ARG C42_CTR_ENTRYPOINT=$C42_CTR_ROOT/entrypoint
 ARG C42_GOPRIVATE="github.com/ctx42"
 
 ENV C42_CTR_ROOT=$C42_CTR_ROOT \
-    C42_CTR_PROJECT_ROOT=$C42_CTR_PROJECT_ROOT \
+    C42_CTR_PRJ_ROOT=$C42_CTR_PRJ_ROOT \
     GOPATH=$C42_BLD_GOPATH \
     GOCACHE=$C42_BLD_GOCACHE \
     GOBIN=$C42_BLD_GOBIN \
@@ -272,7 +272,7 @@ ENV C42_CTR_ROOT=$C42_CTR_ROOT \
     PATH="$PATH:/usr/local/go/bin:$C42_BLD_GOBIN:$C42_CTR_BIN"
 
 RUN mkdir -p $C42_CTR_ROOT && chmod go+rwx $C42_CTR_ROOT && \
-    mkdir -p $C42_CTR_PROJECT_ROOT && chmod go+rwx $C42_CTR_PROJECT_ROOT && \
+    mkdir -p $C42_CTR_PRJ_ROOT && chmod go+rwx $C42_CTR_PRJ_ROOT && \
     mkdir -p $C42_BLD_GOPATH && chmod go+rwx $C42_BLD_GOPATH && \
     mkdir -p $C42_BLD_GOBIN && chmod go+rwx $C42_BLD_GOBIN && \
     mkdir -p $C42_CTR_BIN && chmod go+rwx $C42_CTR_BIN && \
@@ -289,33 +289,28 @@ COPY --from=base-builder /tini $C42_CTR_BIN/tini
 COPY scripts/keep_ctr_alive.sh $C42_CTR_BIN
 COPY scripts/run_scripts.sh $C42_CTR_BIN
 
-WORKDIR $C42_CTR_PROJECT_ROOT
+WORKDIR $C42_CTR_PRJ_ROOT
 
 # ctx42 arguments expected in all Dockerfiles.
-ARG C42_BUILD_DATE="0001-01-01T00:00:00Z"
-ARG C42_CCID="unknown"
+ARG C42_BLD_DATE="0001-01-01T00:00:00Z"
 ARG C42_SCM_REPO="unknown"
 ARG C42_SCM_HASH="0000000"
 ARG C42_SCM_REV="v0.0.0"
 
 # OCI Image Spec labels expected to be set in all images.
-LABEL org.opencontainers.image.created="$C42_BUILD_DATE" \
-      org.opencontainers.image.ref.name="$C42_CCID" \
+LABEL org.opencontainers.image.created="$C42_BLD_DATE" \
+      org.opencontainers.image.ref.name="$C42_SCM_REV" \
       org.opencontainers.image.source="$C42_SCM_REPO" \
       org.opencontainers.image.revision="$C42_SCM_HASH" \
       org.opencontainers.image.version="$C42_SCM_REV"
 
-# ctx42 and OCI environment variables expected in all images.
-ENV C42_BUILD_DATE="$C42_BUILD_DATE" \
-    C42_CCID="$C42_CCID" \
+# ctx42 environment variables expected in all images. The OCI metadata is
+# carried by the labels above only; xdef dropped the OCI_IMAGE_* variables
+# that used to mirror them.
+ENV C42_BLD_DATE="$C42_BLD_DATE" \
     C42_SCM_REPO="$C42_SCM_REPO" \
     C42_SCM_HASH="$C42_SCM_HASH" \
     C42_SCM_REV="$C42_SCM_REV" \
-    OCI_IMAGE_CREATED="$C42_BUILD_DATE" \
-    OCI_IMAGE_REF_NAME="$C42_CCID" \
-    OCI_IMAGE_SOURCE="$C42_SCM_REPO" \
-    OCI_IMAGE_REVISION="$C42_SCM_HASH" \
-    OCI_IMAGE_VERSION="$C42_SCM_REV" \
     TZ="UTC"
 
 
@@ -326,28 +321,23 @@ ENV C42_BUILD_DATE="$C42_BUILD_DATE" \
 FROM src-test AS test
 
 # ctx42 arguments expected in all Dockerfiles.
-ARG C42_BUILD_DATE="0001-01-01T00:00:00Z"
-ARG C42_CCID="unknown"
+ARG C42_BLD_DATE="0001-01-01T00:00:00Z"
 ARG C42_SCM_REPO="unknown"
 ARG C42_SCM_HASH="0000000"
 ARG C42_SCM_REV="v0.0.0"
 
 # OCI Image Spec labels expected to be set in all images.
-LABEL org.opencontainers.image.created="$C42_BUILD_DATE" \
-      org.opencontainers.image.ref.name="$C42_CCID" \
+LABEL org.opencontainers.image.created="$C42_BLD_DATE" \
+      org.opencontainers.image.ref.name="$C42_SCM_REV" \
       org.opencontainers.image.source="$C42_SCM_REPO" \
       org.opencontainers.image.revision="$C42_SCM_HASH" \
       org.opencontainers.image.version="$C42_SCM_REV"
 
-# ctx42 and OCI environment variables expected in all images.
-ENV C42_BUILD_DATE="$C42_BUILD_DATE" \
-    C42_CCID="$C42_CCID" \
+# ctx42 environment variables expected in all images. The OCI metadata is
+# carried by the labels above only; xdef dropped the OCI_IMAGE_* variables
+# that used to mirror them.
+ENV C42_BLD_DATE="$C42_BLD_DATE" \
     C42_SCM_REPO="$C42_SCM_REPO" \
     C42_SCM_HASH="$C42_SCM_HASH" \
     C42_SCM_REV="$C42_SCM_REV" \
-    OCI_IMAGE_CREATED="$C42_BUILD_DATE" \
-    OCI_IMAGE_REF_NAME="$C42_CCID" \
-    OCI_IMAGE_SOURCE="$C42_SCM_REPO" \
-    OCI_IMAGE_REVISION="$C42_SCM_HASH" \
-    OCI_IMAGE_VERSION="$C42_SCM_REV" \
     TZ="UTC"

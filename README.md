@@ -13,7 +13,7 @@ argument (versions, paths, registry) and derives the OCI label metadata from
 git.
 
 ```shell
-./bin/build.sh          # build all targets in C42_BLD_TARGETS
+./bin/build.sh          # build all targets in C42_BLD_IMG_TARGETS
 ./bin/build.sh base     # build only the given target(s)
 ```
 
@@ -27,6 +27,6 @@ publishes exactly what was just built. Log in to the registry first
 (`docker login ghcr.io`).
 
 ```shell
-./bin/push.sh           # push all targets in C42_BLD_TARGETS
+./bin/push.sh           # push all targets in C42_BLD_IMG_TARGETS
 ./bin/push.sh base      # push only the given target(s)
 ```
