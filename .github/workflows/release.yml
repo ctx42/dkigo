@@ -3,10 +3,12 @@ name: release
 # Run the full pipeline (test -> build -> push) on tag pushes for releases,
 # and on develop-branch pushes to exercise the whole flow before tagging.
 #
-# The image tag is derived from `git describe --tags`: tag v1.2.3 publishes
-# ghcr.io/ctx42/dkigo-<target>:v1.2.3, while a develop push (no tag on the
-# commit) publishes ghcr.io/ctx42/dkigo-<target>:<short-sha> for every target
-# in C42_BLD_IMG_TARGETS (see configs/project.conf).
+# The image tag comes from cmd/scmver, which build.sh compiles and runs: tag
+# v1.2.3 publishes ghcr.io/ctx42/dkigo-<target>:v1.2.3 and moves `latest`, a
+# pre-release tag such as v1.0.0-rc.1 publishes without moving it, and a
+# develop push publishes a pre-release of the release its commits imply, such
+# as ghcr.io/ctx42/dkigo-<target>:v1.3.0-dev.3_g7f93fb4, for every target in
+# C42_BLD_IMG_TARGETS (see configs/project.conf and cmd/scmver).
 on:
   push:
     branches:
@@ -25,8 +27,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # build.sh derives the version from `git describe --tags`, which
-          # needs full history and the tags fetched.
+          # cmd/scmver derives the version from `git describe`, which needs
+          # full history and the tags fetched.
           fetch-depth: 0
 
       - name: Set up Go
@@ -55,8 +57,9 @@ jobs:
 
       - name: Build and push images
         # ssh-agent gives `--ssh default` a reachable socket for the Dockerfile's
-        # ssh-keyscan step; no key is required. build.sh reads C42_BLD_* to cache
-        # layers across runs and push straight to ghcr.io.
+        # ssh-keyscan step; no key is required. build.sh compiles and runs
+        # cmd/scmver for the image tag, and reads C42_BLD_* to cache layers
+        # across runs and push straight to ghcr.io.
         env:
           C42_BLD_CACHE: gha
           C42_BLD_PUSH: "1"
