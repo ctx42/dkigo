@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# Build the dkigo images straight from configs/project.conf - no extra tooling
-# required. Every build argument (versions, paths, registry) comes from that
-# file; the OCI label metadata is derived from git.
+# Build the dkigo images straight from configs/project.conf - no tooling beyond
+# Go and Docker required. Every build argument (versions, paths, registry)
+# comes from that file; the version and OCI label metadata come from
+# cmd/scmver.
 #
 # Runs from any working directory — paths resolve relative to this script.
 #
@@ -42,7 +43,15 @@ else
 	targets=(${C42_BLD_IMG_TARGETS//,/ })
 fi
 
-rev="$(git -C "$ROOT" describe --tags --always)"
+# Compile cmd/scmver and run it for C42_SCM_REV, C42_SCM_HASH, img_tag and
+# is_release. It derives the version with the gmtask pinned in go.mod - the
+# same code gomake stamps binaries with. The output is captured before it is
+# evaluated so a failing scmver stops the script under `set -e`.
+scmver="$ROOT/tmp/scmver"
+mkdir -p "$ROOT/tmp"
+go -C "$ROOT" build -o "$scmver" ./cmd/scmver
+scm_env="$("$scmver" "$ROOT")"
+eval "$scm_env"
 
 # Build date as RFC3339 with a three-digit fraction - the layout xdef renders
 # (xdef.BldDateStr), which keeps every date the same width. %N is nanoseconds;
@@ -55,19 +64,12 @@ else
 	bld_date="$(date -u +%Y-%m-%dT%H:%M:%S).000Z"
 fi
 
-# A release build has HEAD sitting exactly on a v* tag; a develop push does not
-# (git describe would append -<n>-g<sha>). Only releases also get the moving
-# `latest` tag.
-is_release=0
-if git -C "$ROOT" describe --tags --exact-match --match 'v*' >/dev/null 2>&1; then
-	is_release=1
-fi
-
 for target in "${targets[@]}"; do
-	image="$C42_REG_REPO/dkigo-$target:$rev"
+	image="$C42_REG_REPO/dkigo-$target:$img_tag"
 	echo "[dkigo] building $image"
 
-	# Release builds are additionally tagged `latest`.
+	# Only a release - a clean tree on a semver tag that is not a pre-release -
+	# moves `latest`.
 	tags=(-t "$image")
 	if [ "$is_release" = "1" ]; then
 		latest="$C42_REG_REPO/dkigo-$target:latest"
@@ -92,8 +94,8 @@ for target in "${targets[@]}"; do
 	docker buildx build \
 		$(sed -nE 's/^([A-Za-z_][A-Za-z0-9_]*)=.*/--build-arg \1/p' "$CONF") \
 		--build-arg C42_BLD_DATE="$bld_date" \
-		--build-arg C42_SCM_HASH="$(git -C "$ROOT" rev-parse --short HEAD)" \
-		--build-arg C42_SCM_REV="$rev" \
+		--build-arg C42_SCM_HASH="$C42_SCM_HASH" \
+		--build-arg C42_SCM_REV="$C42_SCM_REV" \
 		--build-arg C42_SCM_REPO="https://github.com/ctx42/dkigo" \
 		--ssh default \
 		--target "$target" \
