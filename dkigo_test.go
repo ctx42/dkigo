@@ -68,7 +68,7 @@ func Test_CfgAll(t *testing.T) {
 		xdef.EnvCtrBin:                  "/ctx42/bin",
 		"C42_BLD_DOCKER_BUILDX_VERSION": "v0.35.0",
 		"C42_BLD_DOCKER_CLI_VERSION":    "29.6.1",
-		"C42_BLD_GMTASK_VERSION":        "v0.8.0",
+		"C42_BLD_GMTASK_VERSION":        "v0.9.0",
 		"C42_BLD_TINI_VERSION":          "v0.19.0",
 		"C42_BLD_GOBIN":                 "/ctx42/go-bin",
 		"C42_BLD_GOCACHE":               "/ctx42/go-cache",
