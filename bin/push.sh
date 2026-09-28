@@ -49,4 +49,12 @@ for target in "${targets[@]}"; do
 	image="$C42_REG_REPO/dkigo-$target:$img_tag"
 	echo "[dkigo] pushing $image"
 	docker push "$image"
+
+	# Only a release - a clean tree on a semver tag that is not a pre-release -
+	# pushes `latest`, which build.sh tagged under the same rule.
+	if [ "$is_release" = "1" ]; then
+		latest="$C42_REG_REPO/dkigo-$target:latest"
+		echo "[dkigo] pushing $latest"
+		docker push "$latest"
+	fi
 done

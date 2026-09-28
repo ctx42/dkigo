@@ -76,9 +76,8 @@ gomake :docker:image:push -n dkigo -T base   # push only the given target(s)
 
 Without gomake, [`bin/push.sh`](bin/push.sh) pushes the images built by
 `bin/build.sh`, reusing the same targets and the same `cmd/scmver` derivation
-so `./bin/build.sh && ./bin/push.sh` publishes the versioned tags that were
-just built. It does not push `latest`; for a release, build with
-`C42_BLD_PUSH=1` instead, which pushes both:
+so `./bin/build.sh && ./bin/push.sh` publishes exactly what was just built,
+including `latest` for a release:
 
 ```shell
 ./bin/push.sh           # push all targets in C42_BLD_IMG_TARGETS
