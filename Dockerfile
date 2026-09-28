@@ -1,5 +1,10 @@
+# check=skip=InvalidDefaultArgInFrom
 # ==============================================================================
 # Creates "base" and "test" images for Go programs.
+#
+# The base images come from C42_BLD_IMG_BASE and C42_BLD_IMG_RUNTIME, which
+# bin/build.sh always passes from configs/project.conf. They have no defaults
+# here so the two cannot drift, hence the skipped check above.
 #
 #   base - tiny runtime base on almalinux micro (no toolchain, no package
 #          manager); this is what deployable services build FROM.
@@ -137,8 +142,7 @@ ENV C42_CTR_ROOT=$C42_CTR_ROOT \
     GOBIN=$C42_BLD_GOBIN \
     C42_CTR_BIN=$C42_CTR_BIN \
     GOPRIVATE=$C42_GOPRIVATE \
-    C42_CTR_ENTRYPOINT=$C42_CTR_ENTRYPOINT \
-    PATH="$PATH:/usr/local/go/bin:$C42_BLD_GOBIN:$C42_CTR_BIN"
+    C42_CTR_ENTRYPOINT=$C42_CTR_ENTRYPOINT
 
 WORKDIR $C42_CTR_PRJ_ROOT
 
@@ -159,12 +163,6 @@ RUN cd /tmp && \
     mkdir -p /usr/local/lib/docker/cli-plugins && \
     mv buildx-$C42_BLD_DOCKER_BUILDX_VERSION.linux-amd64 /usr/local/lib/docker/cli-plugins/docker-buildx && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-
-# Go module proxy address.
-ARG C42_GOPROXY=https://proxy.golang.org
-
-# Go checksum database.
-ARG C42_GOSUMDB="sum.golang.org"
 
 # Path to golintci cache directory.
 ARG C42_BLD_GOLINT_CACHE=$C42_CTR_ROOT/go-cache-lint
