@@ -142,6 +142,6 @@ func Test_run(t *testing.T) {
 		err := run(ctx, rng)
 
 		// --- Then ---
-		assert.ErrorIs(t, ErrTooManyArgs, err)
+		assert.ErrorIs(t, errTooManyArgs, err)
 	})
 }

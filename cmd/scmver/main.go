@@ -35,8 +35,8 @@ import (
 	"github.com/ctx42/xdef/pkg/xdef"
 )
 
-// ErrTooManyArgs is returned when more than one repository is given.
-var ErrTooManyArgs = errors.New("too many arguments")
+// errTooManyArgs is returned when more than one repository is given.
+var errTooManyArgs = errors.New("too many arguments")
 
 func main() {
 	rng := ring.New(ring.WithArgs(os.Args[1:]))
@@ -54,7 +54,7 @@ func main() {
 func run(ctx context.Context, rng *ring.Ring) error {
 	args := rng.Args()
 	if len(args) > 1 {
-		return ErrTooManyArgs
+		return errTooManyArgs
 	}
 	var repo string
 	if len(args) == 1 {
