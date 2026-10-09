@@ -120,8 +120,7 @@ func Test_run(t *testing.T) {
 		err := run(t.Context(), rng)
 
 		// --- Then ---
-		want := "derive version: not a git repository"
-		assert.ErrorContain(t, want, err)
+		assert.ErrorContain(t, "derive version: not a git repository", err)
 	})
 
 	t.Run("error - too many arguments", func(t *testing.T) {
