@@ -10,7 +10,7 @@ import (
 )
 
 func Test_CfgLookup(t *testing.T) {
-	t.Run("exiting key", func(t *testing.T) {
+	t.Run("existing key", func(t *testing.T) {
 		// --- When ---
 		have, exists := CfgLookup(xdef.EnvRegRepo)
 
@@ -19,7 +19,7 @@ func Test_CfgLookup(t *testing.T) {
 		assert.True(t, exists)
 	})
 
-	t.Run("not exiting key", func(t *testing.T) {
+	t.Run("missing key", func(t *testing.T) {
 		// --- When ---
 		have, exists := CfgLookup("__not_existing__")
 
@@ -30,7 +30,7 @@ func Test_CfgLookup(t *testing.T) {
 }
 
 func Test_CfgGet(t *testing.T) {
-	t.Run("exiting key", func(t *testing.T) {
+	t.Run("existing key", func(t *testing.T) {
 		// --- When ---
 		have := CfgGet(xdef.EnvRegRepo)
 
@@ -38,7 +38,7 @@ func Test_CfgGet(t *testing.T) {
 		assert.Equal(t, "ghcr.io/ctx42", have)
 	})
 
-	t.Run("not exiting key", func(t *testing.T) {
+	t.Run("missing key", func(t *testing.T) {
 		// --- When ---
 		have := CfgGet("__not_existing__")
 
