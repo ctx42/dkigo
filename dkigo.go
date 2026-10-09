@@ -41,10 +41,8 @@ var embedded embed.FS
 // CfgLookup returns project configuration key. Returns empty string and false
 // if the key does not exist, otherwise it returns the key value and true.
 func CfgLookup(key string) (string, bool) {
-	if val, ok := prjCfg()[key]; ok {
-		return val, true
-	}
-	return "", false
+	val, ok := prjCfg()[key]
+	return val, ok
 }
 
 // CfgGet returns project configuration key.
