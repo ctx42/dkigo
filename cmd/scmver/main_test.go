@@ -13,8 +13,6 @@ import (
 func Test_run(t *testing.T) {
 	t.Run("release", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
-
 		prj := prjkit.New(t, t.TempDir())
 		prj.CreateFileWith("file0 1", "file0.txt")
 		cm := prj.GitInitAddAll("v0.4.0")
@@ -25,7 +23,7 @@ func Test_run(t *testing.T) {
 		rng.EnvUnset(gmgo.EnvBldBump)
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -39,8 +37,6 @@ func Test_run(t *testing.T) {
 
 	t.Run("development build", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
-
 		prj := prjkit.New(t, t.TempDir())
 		prj.CreateFileWith("file0 1", "file0.txt")
 		prj.GitInitAddAll("v0.4.0")
@@ -53,7 +49,7 @@ func Test_run(t *testing.T) {
 		rng.EnvUnset(gmgo.EnvBldBump)
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -67,8 +63,6 @@ func Test_run(t *testing.T) {
 
 	t.Run("pre-release tag is not a release", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
-
 		prj := prjkit.New(t, t.TempDir())
 		prj.CreateFileWith("file0 1", "file0.txt")
 		cm := prj.GitInitAddAll("v1.0.0-rc.1")
@@ -79,7 +73,7 @@ func Test_run(t *testing.T) {
 		rng.EnvUnset(gmgo.EnvBldBump)
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -93,8 +87,6 @@ func Test_run(t *testing.T) {
 
 	t.Run("bump from the environment", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
-
 		prj := prjkit.New(t, t.TempDir())
 		prj.CreateFileWith("file0 1", "file0.txt")
 		prj.GitInitAddAll("v1.4.0")
@@ -107,7 +99,7 @@ func Test_run(t *testing.T) {
 		rng.EnvSet(gmgo.EnvBldBump, "major")
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		assert.NoError(t, err)
@@ -121,12 +113,11 @@ func Test_run(t *testing.T) {
 
 	t.Run("error - not a git repository", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
 		rng := ring.New(ring.WithArgs([]string{t.TempDir()}))
 		rng.EnvUnset(gmgo.EnvBldBump)
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		want := "derive version: not a git repository"
@@ -135,11 +126,10 @@ func Test_run(t *testing.T) {
 
 	t.Run("error - too many arguments", func(t *testing.T) {
 		// --- Given ---
-		ctx := t.Context()
 		rng := ring.New(ring.WithArgs([]string{"a", "b"}))
 
 		// --- When ---
-		err := run(ctx, rng)
+		err := run(t.Context(), rng)
 
 		// --- Then ---
 		assert.ErrorIs(t, errTooManyArgs, err)
