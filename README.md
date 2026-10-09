@@ -15,8 +15,8 @@ pins:
 
 ```shell
 mkdir -p /tmp/gomake-install && cd /tmp/gomake-install && go mod init gomake-install
-GOFLAGS=-mod=mod go run github.com/ctx42/gomake/cmd/install@v0.27.1 \
-    --targets=https://raw.githubusercontent.com/ctx42/gmtask/v0.9.0/targets.yaml
+GOFLAGS=-mod=mod go run github.com/ctx42/gomake/cmd/install@v0.30.1 \
+    --targets=https://raw.githubusercontent.com/ctx42/gmtask/v0.12.0/targets.yaml
 ```
 
 Then, from the repository root:
