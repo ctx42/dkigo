@@ -1,3 +1,13 @@
+// Package dkigo exposes the configuration the dkigo Docker images are built
+// with: the base images, the Dockerfile targets, the pinned tool versions, and
+// the container paths, read from the embedded configs/project.conf.
+//
+// Import it as github.com/ctx42/dkigo:
+//
+//	goVer := dkigo.CfgGet("C42_BLD_GO_VERSION") // e.g. "1.26.2"
+//	for key, val := range dkigo.CfgAll() {
+//		fmt.Printf("--build-arg\n%s=%s\n", key, val)
+//	}
 package dkigo
 
 import (
