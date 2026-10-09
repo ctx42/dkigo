@@ -61,7 +61,7 @@ func Test_run(t *testing.T) {
 		assert.Equal(t, want, tst.Stdout())
 	})
 
-	t.Run("pre-release tag is not a release", func(t *testing.T) {
+	t.Run("pre-release tag", func(t *testing.T) {
 		// --- Given ---
 		prj := prjkit.New(t, t.TempDir())
 		prj.CreateFileWith("file0 1", "file0.txt")
