@@ -86,5 +86,8 @@ func run(ctx context.Context, rng *ring.Ring) error {
 		gmdkr.ImgTag(ver.Rev),
 		isRelease,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("write assignments: %w", err)
+	}
+	return nil
 }
