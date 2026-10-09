@@ -33,14 +33,10 @@ var prjCfg = sync.OnceValue(func() map[string]string {
 	return cfg
 })
 
-// Embedded files.
-//
 //go:embed configs/project.conf
 var embedded embed.FS
 
-// CfgLookup returns the value of the project configuration key. Returns an
-// empty string and false if the key does not exist, otherwise it returns the
-// value and true.
+// CfgLookup returns the value of the project configuration key.
 func CfgLookup(key string) (string, bool) {
 	val, ok := prjCfg()[key]
 	return val, ok
