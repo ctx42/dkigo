@@ -14,32 +14,34 @@ import (
 	"bytes"
 	"embed"
 	"maps"
+	"sync"
 
 	"github.com/ctx42/dotenv/pkg/dotenv"
 )
 
-// prjCfg represents project configuration as a map.
-var prjCfg = make(map[string]string)
+// prjCfg returns the project configuration, parsed on the first call. It
+// panics when the embedded configuration cannot be read or parsed.
+var prjCfg = sync.OnceValue(func() map[string]string {
+	rawProjCfg, err := embedded.ReadFile("configs/project.conf")
+	if err != nil {
+		panic(err)
+	}
+	cfg := make(map[string]string)
+	if err = dotenv.Parse(cfg, bytes.NewReader(rawProjCfg)); err != nil {
+		panic(err)
+	}
+	return cfg
+})
 
 // Embedded files.
 //
 //go:embed configs/project.conf
 var embedded embed.FS
 
-func init() {
-	rawProjCfg, err := embedded.ReadFile("configs/project.conf")
-	if err != nil {
-		panic(err)
-	}
-	if err = dotenv.Parse(prjCfg, bytes.NewReader(rawProjCfg)); err != nil {
-		panic(err)
-	}
-}
-
 // CfgLookup returns project configuration key. Returns empty string and false
 // if the key does not exist, otherwise it returns the key value and true.
 func CfgLookup(key string) (string, bool) {
-	if val, ok := prjCfg[key]; ok {
+	if val, ok := prjCfg()[key]; ok {
 		return val, true
 	}
 	return "", false
@@ -56,4 +58,4 @@ func CfgGet(key string) string {
 // CfgAll returns all project configuration keys.
 //
 // It returns copy of the original map.
-func CfgAll() map[string]string { return maps.Clone(prjCfg) }
+func CfgAll() map[string]string { return maps.Clone(prjCfg()) }
