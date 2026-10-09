@@ -1,3 +1,5 @@
+## v0.6.0 (Fri, 09 Oct 2026 20:14:37 UTC)
+
 ## v0.5.1 (Fri, 09 Oct 2026 19:01:33 UTC)
 - build(deps): bump gomake to v0.30.0 and gmtask to v0.12.0.
 - docs: add the dkigo package overview.
