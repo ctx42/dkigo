@@ -1,3 +1,22 @@
+## v0.5.1 (Fri, 09 Oct 2026 19:01:33 UTC)
+- build(deps): bump gomake to v0.30.0 and gmtask to v0.12.0.
+- docs: add the dkigo package overview.
+- fix(scmver): wrap the error writing the assignments.
+- test(scmver): unset C42_BLD_BUMP in the not-a-repository case.
+- refactor: parse the project configuration on first use.
+- refactor: return the map lookup directly in CfgLookup.
+- refactor(scmver): unexport the too-many-arguments error.
+- test(scmver): pass t.Context() inline to run.
+- test(scmver): inline the expected not-a-repository error.
+- test(scmver): shorten the pre-release subtest name.
+- docs: say the Cfg functions return values, not keys.
+- docs: drop godoc that restates the code.
+- test: fix the existing and missing key subtest names.
+- refactor(scmver): parse the release tag with semver.MustParse.
+- test(scmver): cover a failed write of the assignments.
+- build(deps): bump gomake to v0.30.1.
+- docs: install the gomake and gmtask versions the project pins.
+
 ## v0.5.0 (Mon, 28 Sep 2026 10:48:31 UTC)
 - refactor(build)!: align env variable names with xdef.
 - build(deps): bump gomake to v0.27.1 and gmtask to v0.8.0.
