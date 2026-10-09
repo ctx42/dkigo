@@ -1,12 +1,14 @@
 package main
 
 import (
+	"io"
 	"testing"
 
 	"github.com/ctx42/gmtask/pkg/gmgo"
 	"github.com/ctx42/ring/pkg/ring"
 	"github.com/ctx42/ring/pkg/ring/ringtest"
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testkit/pkg/iokit"
 	"github.com/ctx42/testkit/pkg/prjkit"
 )
 
@@ -121,6 +123,25 @@ func Test_run(t *testing.T) {
 
 		// --- Then ---
 		assert.ErrorContain(t, "derive version: not a git repository", err)
+	})
+
+	t.Run("error - write fails", func(t *testing.T) {
+		// --- Given ---
+		prj := prjkit.New(t, t.TempDir())
+		prj.CreateFileWith("file0 1", "file0.txt")
+		prj.GitInitAddAll("v0.4.0")
+		prj.Close()
+
+		rng := ring.New(ring.WithArgs([]string{prj.Root()}))
+		rng.EnvUnset(gmgo.EnvBldBump)
+		rng.SetStdout(iokit.ErrWriter(io.Discard, 0))
+
+		// --- When ---
+		err := run(t.Context(), rng)
+
+		// --- Then ---
+		assert.ErrorIs(t, iokit.ErrWrite, err)
+		assert.ErrorEqual(t, "write assignments: write error", err)
 	})
 
 	t.Run("error - too many arguments", func(t *testing.T) {
