@@ -123,6 +123,7 @@ func Test_run(t *testing.T) {
 		// --- Given ---
 		ctx := t.Context()
 		rng := ring.New(ring.WithArgs([]string{t.TempDir()}))
+		rng.EnvUnset(gmgo.EnvBldBump)
 
 		// --- When ---
 		err := run(ctx, rng)
