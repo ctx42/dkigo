@@ -74,7 +74,7 @@ func Test_CfgAll(t *testing.T) {
 		"C42_BLD_GOCACHE":               "/ctx42/go-cache",
 		"C42_BLD_GOLANGCI_LINT_VERSION": "v2.12.2",
 		"C42_BLD_GOLINT_CACHE":          "/ctx42/go-cache-lint",
-		"C42_BLD_GOMAKE_VERSION":        "v0.30.0",
+		"C42_BLD_GOMAKE_VERSION":        "v0.30.1",
 		"C42_BLD_GOPATH":                "/ctx42/go",
 		"C42_BLD_GO_VERSION":            "1.26.2",
 		"C42_BLD_XDEV_VERSION":          "v0.1.0",
