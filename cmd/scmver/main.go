@@ -67,14 +67,8 @@ func run(ctx context.Context, rng *ring.Ring) error {
 	}
 
 	isRelease := "0"
-	if ver.Release {
-		tag, err := semver.NewVersion(ver.Tag)
-		if err != nil {
-			return fmt.Errorf("%s: %w", ver.Tag, err)
-		}
-		if tag.Prerelease() == "" {
-			isRelease = "1"
-		}
+	if ver.Release && semver.MustParse(ver.Tag).Prerelease() == "" {
+		isRelease = "1"
 	}
 
 	format := "%s='%s'\n%s='%s'\nimg_tag='%s'\nis_release='%s'\n"
