@@ -1,3 +1,6 @@
+## v0.7.2 (Sat, 10 Oct 2026 19:56:32 UTC)
+- build(deps): update gomake to v0.30.3 and gmtask to v0.15.3.
+
 ## v0.7.1 (Sat, 10 Oct 2026 19:32:47 UTC)
 - build(deps): update 8 ctx42 dependencies.
 
