@@ -32,18 +32,33 @@ func Test_parseCfg(t *testing.T) {
 			xdef.EnvCtrBin:                  "/ctx42/bin",
 			"C42_BLD_DOCKER_BUILDX_VERSION": "v0.35.0",
 			"C42_BLD_DOCKER_CLI_VERSION":    "29.6.1",
-			"C42_BLD_GMTASK_VERSION":        "v0.15.3",
 			"C42_BLD_TINI_VERSION":          "v0.19.0",
 			"C42_BLD_GOBIN":                 "/ctx42/go-bin",
 			"C42_BLD_GOCACHE":               "/ctx42/go-cache",
 			"C42_BLD_GOLANGCI_LINT_VERSION": "v2.12.2",
 			"C42_BLD_GOLINT_CACHE":          "/ctx42/go-cache-lint",
-			"C42_BLD_GOMAKE_VERSION":        "v0.30.3",
 			"C42_BLD_GOPATH":                "/ctx42/go",
 			"C42_BLD_GO_VERSION":            "1.26.2",
 			"C42_BLD_XDEV_VERSION":          "v0.1.0",
 		}
+		// The module versions come from go.mod, which
+		// Test_moduleVersions_tabular checks against the go command.
+		for key := range modVersions {
+			assert.NotEmpty(t, have[key])
+			delete(have, key)
+		}
 		assert.Equal(t, want, have)
+	})
+
+	t.Run("environment overrides a module version", func(t *testing.T) {
+		// --- Given ---
+		env := []string{"C42_BLD_GOMAKE_VERSION=v9.9.9"}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		assert.Equal(t, "v9.9.9", have["C42_BLD_GOMAKE_VERSION"])
 	})
 
 	t.Run("environment overrides declared key", func(t *testing.T) {
@@ -156,6 +171,67 @@ func Test_moduleVersions_tabular(t *testing.T) {
 			assert.NoError(t, err, "%s", out)
 			have := strings.TrimSpace(string(out))
 			assert.Equal(t, parseCfg(nil)[tc.key], have)
+		})
+	}
+}
+
+func Test_requiredVersion_tabular(t *testing.T) {
+	tt := []struct {
+		testN string
+
+		mod  string
+		want string
+		ok   bool
+	}{
+		{
+			"require block",
+			"" +
+				"module m\n\nrequire (\n" +
+				"\texample.com/a v1.0.0\n\texample.com/b v1.2.3\n)\n",
+			"v1.2.3",
+			true,
+		},
+		{
+			"single-line require",
+			"module m\n\nrequire example.com/b v1.2.3\n",
+			"v1.2.3",
+			true,
+		},
+		{
+			"indirect requirement",
+			"module m\n\nrequire (\n\texample.com/b v1.2.3 // indirect\n)\n",
+			"v1.2.3",
+			true,
+		},
+		{
+			"replace block skipped",
+			"module m\n\nreplace (\n\texample.com/b => ../b\n)\n",
+			"",
+			false,
+		},
+		{
+			"single-line replace skipped",
+			"module m\n\nreplace example.com/b v1.0.0 => ../b\n",
+			"",
+			false,
+		},
+		{
+			"other module",
+			"module m\n\nrequire example.com/a v1.0.0\n",
+			"",
+			false,
+		},
+		{"empty", "", "", false},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.testN, func(t *testing.T) {
+			// --- When ---
+			have, ok := requiredVersion([]byte(tc.mod), "example.com/b")
+
+			// --- Then ---
+			assert.Equal(t, tc.want, have)
+			assert.Equal(t, tc.ok, ok)
 		})
 	}
 }
