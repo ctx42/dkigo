@@ -16,7 +16,7 @@ pins:
 ```shell
 mkdir -p /tmp/gomake-install && cd /tmp/gomake-install && go mod init gomake-install
 GOFLAGS=-mod=mod go run github.com/ctx42/gomake/cmd/install@v0.30.1 \
-    --targets=https://raw.githubusercontent.com/ctx42/gmtask/v0.12.0/targets.yaml
+    --targets=https://raw.githubusercontent.com/ctx42/gmtask/v0.14.0/targets.yaml
 ```
 
 Then, from the repository root:
@@ -83,3 +83,28 @@ including `latest` for a release:
 ./bin/push.sh           # push all targets in C42_BLD_IMG_TARGETS
 ./bin/push.sh base      # push only the given target(s)
 ```
+
+## Another Registry
+
+The registry in `configs/project.conf` is ctx42's. To build and publish the
+images under your own organization without forking, override it from the
+environment: a variable named like a key in `configs/project.conf` replaces
+that key's value, an empty value included. Variables the file does not declare
+are ignored. Both build paths honor the override and print one
+`override KEY=value` line per overridden key:
+
+```shell
+export C42_REG_HOST=registry.acme.io
+export C42_REG_REPO=registry.acme.io/platform
+export C42_GOPRIVATE=github.com/acme
+
+gomake :docker:image:build -n dkigo -l   # or ./bin/build.sh
+gomake :docker:image:push -n dkigo -l    # or ./bin/push.sh
+```
+
+Set `C42_REG_REPO` explicitly: overrides apply after `$VAR` expansion, so
+overriding `C42_REG_HOST` alone keeps the `ghcr.io/ctx42` repository.
+
+Go code importing `github.com/ctx42/dkigo` sees the same values: `CfgGet`,
+`CfgLookup`, and `CfgAll` apply the overrides from the process environment,
+read once on first use.

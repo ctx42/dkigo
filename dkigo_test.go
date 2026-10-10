@@ -1,6 +1,7 @@
 package dkigo
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -9,13 +10,89 @@ import (
 	"github.com/ctx42/xdef/pkg/xdef"
 )
 
+func Test_parseCfg(t *testing.T) {
+	t.Run("no overrides", func(t *testing.T) {
+		// --- When ---
+		have := parseCfg(nil)
+
+		// --- Then ---
+		want := map[string]string{
+			xdef.EnvBldImgBase:              "almalinux:9.8-minimal",
+			xdef.EnvBldImgRuntime:           "almalinux/9-micro:9.8",
+			xdef.EnvRegHost:                 "ghcr.io",
+			xdef.EnvRegScheme:               "https",
+			xdef.EnvRegRepo:                 "ghcr.io/ctx42",
+			xdef.EnvBldImgTargets:           "base,test",
+			xdef.EnvCtrPrjRoot:              "/ctx42/project",
+			xdef.EnvCtrRoot:                 "/ctx42",
+			xdef.EnvGoPrivate:               "",
+			xdef.EnvGoProxy:                 "",
+			xdef.EnvGoSumDB:                 "",
+			xdef.EnvCtrEntrypoint:           "/ctx42/entrypoint",
+			xdef.EnvCtrBin:                  "/ctx42/bin",
+			"C42_BLD_DOCKER_BUILDX_VERSION": "v0.35.0",
+			"C42_BLD_DOCKER_CLI_VERSION":    "29.6.1",
+			"C42_BLD_GMTASK_VERSION":        "v0.14.0",
+			"C42_BLD_TINI_VERSION":          "v0.19.0",
+			"C42_BLD_GOBIN":                 "/ctx42/go-bin",
+			"C42_BLD_GOCACHE":               "/ctx42/go-cache",
+			"C42_BLD_GOLANGCI_LINT_VERSION": "v2.12.2",
+			"C42_BLD_GOLINT_CACHE":          "/ctx42/go-cache-lint",
+			"C42_BLD_GOMAKE_VERSION":        "v0.30.1",
+			"C42_BLD_GOPATH":                "/ctx42/go",
+			"C42_BLD_GO_VERSION":            "1.26.2",
+			"C42_BLD_XDEV_VERSION":          "v0.1.0",
+		}
+		assert.Equal(t, want, have)
+	})
+
+	t.Run("environment overrides declared key", func(t *testing.T) {
+		// --- Given ---
+		env := []string{
+			xdef.EnvRegRepo + "=registry.acme.io/platform",
+			xdef.EnvGoPrivate + "=github.com/acme",
+		}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		repo := "registry.acme.io/platform"
+		assert.HasKeyValue(t, xdef.EnvRegRepo, repo, have)
+		assert.HasKeyValue(t, xdef.EnvGoPrivate, "github.com/acme", have)
+		assert.HasKeyValue(t, xdef.EnvRegHost, "ghcr.io", have)
+	})
+
+	t.Run("empty environment value overrides", func(t *testing.T) {
+		// --- Given ---
+		env := []string{xdef.EnvRegRepo + "="}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		assert.HasKeyValue(t, xdef.EnvRegRepo, "", have)
+	})
+
+	t.Run("undeclared environment variable ignored", func(t *testing.T) {
+		// --- Given ---
+		env := []string{"C42_NOT_DECLARED=value"}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		assert.Equal(t, parseCfg(nil), have)
+	})
+}
+
 func Test_CfgLookup(t *testing.T) {
 	t.Run("existing key", func(t *testing.T) {
 		// --- When ---
 		have, exists := CfgLookup(xdef.EnvRegRepo)
 
 		// --- Then ---
-		assert.Equal(t, "ghcr.io/ctx42", have)
+		assert.Equal(t, parseCfg(os.Environ())[xdef.EnvRegRepo], have)
 		assert.True(t, exists)
 	})
 
@@ -35,7 +112,7 @@ func Test_CfgGet(t *testing.T) {
 		have := CfgGet(xdef.EnvRegRepo)
 
 		// --- Then ---
-		assert.Equal(t, "ghcr.io/ctx42", have)
+		assert.Equal(t, parseCfg(os.Environ())[xdef.EnvRegRepo], have)
 	})
 
 	t.Run("missing key", func(t *testing.T) {
@@ -52,34 +129,7 @@ func Test_CfgAll(t *testing.T) {
 	have := CfgAll()
 
 	// --- Then ---
-	want := map[string]string{
-		xdef.EnvBldImgBase:              "almalinux:9.8-minimal",
-		xdef.EnvBldImgRuntime:           "almalinux/9-micro:9.8",
-		xdef.EnvRegHost:                 "ghcr.io",
-		xdef.EnvRegScheme:               "https",
-		xdef.EnvRegRepo:                 "ghcr.io/ctx42",
-		xdef.EnvBldImgTargets:           "base,test",
-		xdef.EnvCtrPrjRoot:              "/ctx42/project",
-		xdef.EnvCtrRoot:                 "/ctx42",
-		xdef.EnvGoPrivate:               "",
-		xdef.EnvGoProxy:                 "",
-		xdef.EnvGoSumDB:                 "",
-		xdef.EnvCtrEntrypoint:           "/ctx42/entrypoint",
-		xdef.EnvCtrBin:                  "/ctx42/bin",
-		"C42_BLD_DOCKER_BUILDX_VERSION": "v0.35.0",
-		"C42_BLD_DOCKER_CLI_VERSION":    "29.6.1",
-		"C42_BLD_GMTASK_VERSION":        "v0.12.0",
-		"C42_BLD_TINI_VERSION":          "v0.19.0",
-		"C42_BLD_GOBIN":                 "/ctx42/go-bin",
-		"C42_BLD_GOCACHE":               "/ctx42/go-cache",
-		"C42_BLD_GOLANGCI_LINT_VERSION": "v2.12.2",
-		"C42_BLD_GOLINT_CACHE":          "/ctx42/go-cache-lint",
-		"C42_BLD_GOMAKE_VERSION":        "v0.30.1",
-		"C42_BLD_GOPATH":                "/ctx42/go",
-		"C42_BLD_GO_VERSION":            "1.26.2",
-		"C42_BLD_XDEV_VERSION":          "v0.1.0",
-	}
-	assert.Equal(t, want, have)
+	assert.Equal(t, parseCfg(os.Environ()), have)
 }
 
 func Test_moduleVersions_tabular(t *testing.T) {
@@ -105,7 +155,7 @@ func Test_moduleVersions_tabular(t *testing.T) {
 			// --- Then ---
 			assert.NoError(t, err, "%s", out)
 			have := strings.TrimSpace(string(out))
-			assert.Equal(t, CfgGet(tc.key), have)
+			assert.Equal(t, parseCfg(nil)[tc.key], have)
 		})
 	}
 }

@@ -2,14 +2,19 @@
 #
 # Build the dkigo images straight from configs/project.conf - no tooling beyond
 # Go and Docker required. Every build argument (versions, paths, registry)
-# comes from that file; the version and OCI label metadata come from
-# cmd/scmver.
+# comes from that file, unless an environment variable of the same name
+# overrides it; the version and OCI label metadata come from cmd/scmver.
 #
 # Runs from any working directory — paths resolve relative to this script.
 #
 # Usage:
 #   ./bin/build.sh          # build all targets in C42_BLD_IMG_TARGETS
 #   ./bin/build.sh base     # build only the given target(s)
+#
+# Any key in configs/project.conf can be overridden from the environment, e.g.
+# to build into another registry:
+#   C42_REG_HOST=registry.acme.io C42_REG_REPO=registry.acme.io/platform \
+#       ./bin/build.sh
 #
 # Optional environment variables (unset = plain local build into the daemon):
 #   C42_BLD_CACHE=gha       # read/write a GitHub Actions layer cache (mode=max)
@@ -30,11 +35,27 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONF="$ROOT/configs/project.conf"
 
-# Load the build configuration.
+# Load the build configuration. An environment variable named like a key in
+# the file overrides that key's value, an empty value included; the file
+# itself is the list of keys that may be overridden. Save the overriding
+# values before sourcing the file and restore them after it.
+mapfile -t keys < <(sed -nE 's/^([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p' "$CONF")
+declare -A overrides=()
+for key in "${keys[@]}"; do
+	if [ -n "${!key+set}" ]; then
+		overrides[$key]="${!key}"
+	fi
+done
 set -a
 # shellcheck disable=SC1090
 . "$CONF"
 set +a
+for key in "${keys[@]}"; do
+	if [ -n "${overrides[$key]+set}" ]; then
+		printf -v "$key" '%s' "${overrides[$key]}"
+		echo "[dkigo] override $key=${overrides[$key]}"
+	fi
+done
 
 # Targets: command-line arguments override C42_BLD_IMG_TARGETS.
 if [ "$#" -gt 0 ]; then
@@ -63,6 +84,11 @@ if [ "${#bld_date}" -eq 29 ]; then
 else
 	bld_date="$(date -u +%Y-%m-%dT%H:%M:%S).000Z"
 fi
+
+# Repository the image is built from: the checkout's origin, read from the same
+# git setting gmtask reads, so a fork labels its images with its own origin.
+# A checkout without an origin labels them with an empty value.
+scm_repo="$(git -C "$ROOT" config --local --get remote.origin.url || true)"
 
 for target in "${targets[@]}"; do
 	image="$C42_REG_REPO/dkigo-$target:$img_tag"
@@ -96,7 +122,7 @@ for target in "${targets[@]}"; do
 		--build-arg C42_BLD_DATE="$bld_date" \
 		--build-arg C42_SCM_HASH="$C42_SCM_HASH" \
 		--build-arg C42_SCM_REV="$C42_SCM_REV" \
-		--build-arg C42_SCM_REPO="https://github.com/ctx42/dkigo" \
+		--build-arg C42_SCM_REPO="$scm_repo" \
 		--ssh default \
 		--target "$target" \
 		"${cache[@]}" \
