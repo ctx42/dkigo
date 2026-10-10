@@ -1,3 +1,6 @@
+## v0.7.0 (Sat, 10 Oct 2026 14:01:01 UTC)
+- feat: override project.conf keys from the environment.
+
 ## v0.6.0 (Fri, 09 Oct 2026 20:14:37 UTC)
 
 ## v0.5.1 (Fri, 09 Oct 2026 19:01:33 UTC)
