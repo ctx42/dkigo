@@ -1,3 +1,7 @@
+## v0.7.3 (Thu, 15 Oct 2026 15:12:57 UTC)
+- build: take gomake and gmtask versions from go.mod.
+- chore(deps): update dependencies.
+
 ## v0.7.2 (Sat, 10 Oct 2026 19:56:32 UTC)
 - build(deps): update gomake to v0.30.3 and gmtask to v0.15.3.
 
