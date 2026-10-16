@@ -3,9 +3,7 @@
 # Build the dkigo images straight from configs/project.conf - no tooling beyond
 # Go and Docker required. Every build argument (versions, paths, registry)
 # comes from that file, unless an environment variable of the same name
-# overrides it. The gomake and gmtask versions come from the go.mod
-# requirements instead, overridable the same way; the version and OCI label
-# metadata come from cmd/scmver.
+# overrides it; the version and OCI label metadata come from cmd/scmver.
 #
 # Runs from any working directory — paths resolve relative to this script.
 #
@@ -57,20 +55,6 @@ for key in "${keys[@]}"; do
 		printf -v "$key" '%s' "${overrides[$key]}"
 		echo "[dkigo] override $key=${overrides[$key]}"
 	fi
-done
-
-# The gomake and gmtask versions are the ones go.mod requires, unless the
-# environment overrides them.
-for pair in C42_BLD_GOMAKE_VERSION=github.com/ctx42/gomake \
-	C42_BLD_GMTASK_VERSION=github.com/ctx42/gmtask; do
-	key="${pair%%=*}"
-	if [ -n "${!key+set}" ]; then
-		echo "[dkigo] override $key=${!key}"
-	else
-		ver="$(GOWORK=off go -C "$ROOT" list -m -f '{{.Version}}' "${pair#*=}")"
-		printf -v "$key" '%s' "$ver"
-	fi
-	export "${key?}"
 done
 
 # Targets: command-line arguments override C42_BLD_IMG_TARGETS.
@@ -135,8 +119,6 @@ for target in "${targets[@]}"; do
 
 	docker buildx build \
 		$(sed -nE 's/^([A-Za-z_][A-Za-z0-9_]*)=.*/--build-arg \1/p' "$CONF") \
-		--build-arg C42_BLD_GOMAKE_VERSION \
-		--build-arg C42_BLD_GMTASK_VERSION \
 		--build-arg C42_BLD_DATE="$bld_date" \
 		--build-arg C42_SCM_HASH="$C42_SCM_HASH" \
 		--build-arg C42_SCM_REV="$C42_SCM_REV" \
