@@ -50,3 +50,18 @@ func Test_Dockerfile_projectCA(t *testing.T) {
 	assert.Contain(t, "\nFROM scratch AS project\n", dkf)
 	assert.Contain(t, "cp \"$@\" /etc/pki/ca-trust/source/anchors/", dkf)
 }
+
+func Test_Dockerfile_gitSSHHosts(t *testing.T) {
+	// --- Given ---
+	dkf := oskit.ReadFileStr(t, "Dockerfile")
+
+	// --- When ---
+	have := strings.Count(dkf, "\nARG C42_BLD_GIT_SSH_HOSTS\n")
+
+	// --- Then ---
+	assert.Equal(t, 3, have)
+	assert.NotContain(t, "github.com:", dkf)
+	assert.NotContain(t, "bitbucket.org", dkf)
+	want := "ssh-keyscan -t rsa \"$@\" >> /etc/ssh/ssh_known_hosts"
+	assert.Contain(t, want, dkf)
+}

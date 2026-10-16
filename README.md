@@ -166,3 +166,16 @@ configs/
 │   └── acme-root.crt     # PEM certificate
 └── project.conf
 ```
+
+### Git Hosts over SSH
+
+`C42_BLD_GIT_SSH_HOSTS` lists, comma-separated, the git hosts the images reach
+over SSH. Both images rewrite `https://<host>/` to `git@<host>:` in
+`/etc/gitconfig`, and the test image adds each host's RSA key to
+`/etc/ssh/ssh_known_hosts`. The default is `github.com,bitbucket.org`; an empty
+value configures no host.
+
+```ini
+# configs/project.conf
+C42_BLD_GIT_SSH_HOSTS=git.acme.io
+```

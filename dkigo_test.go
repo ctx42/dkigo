@@ -42,6 +42,7 @@ func Test_parseCfg(t *testing.T) {
 			"C42_BLD_GOPATH":                "/ctx42/go",
 			"C42_BLD_GO_VERSION":            "1.26.2",
 			"C42_BLD_XDEV_VERSION":          "v0.1.0",
+			"C42_BLD_GIT_SSH_HOSTS":         "github.com,bitbucket.org",
 		}
 		assert.Equal(t, want, have)
 	})

@@ -38,13 +38,12 @@ RUN --mount=type=bind,from=project,target=/project \
         update-ca-trust extract; \
     fi
 
-# Configure private repositories.
-COPY <<-EOF /etc/gitconfig
-  [url "git@github.com:"]
-  insteadOf = https://github.com/
-  [url "git@bitbucket.org:"]
-  insteadOf = https://bitbucket.org/
-EOF
+# Reach the C42_BLD_GIT_SSH_HOSTS git hosts over SSH: rewrite each
+# https://<host>/ to git@<host>:.
+ARG C42_BLD_GIT_SSH_HOSTS
+RUN IFS=, && for host in $C42_BLD_GIT_SSH_HOSTS; do \
+        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$host" "$host" >> /etc/gitconfig; \
+    done
 
 # Defines root directory.
 ARG C42_CTR_ROOT=/ctx42
@@ -119,22 +118,21 @@ FROM src-base AS src-test
 RUN microdnf -y install wget tar openssh-clients && \
     microdnf -y clean all
 
+# Trust the RSA keys of the C42_BLD_GIT_SSH_HOSTS git hosts; /etc/gitconfig
+# rewriting them to SSH comes from "src-base".
+ARG C42_BLD_GIT_SSH_HOSTS
+RUN --mount=type=ssh IFS=, && set -- $C42_BLD_GIT_SSH_HOSTS && \
+    if [ $# -gt 0 ]; then \
+        ssh-keyscan -t rsa "$@" >> /etc/ssh/ssh_known_hosts; \
+    fi
+
 ARG C42_BLD_GO_VERSION
-RUN --mount=type=ssh ssh-keyscan -t rsa github.com bitbucket.org >> /etc/ssh/ssh_known_hosts && \
-    wget "https://dl.google.com/go/go$C42_BLD_GO_VERSION.linux-amd64.tar.gz" -O go.tar.gz && \
+RUN wget "https://dl.google.com/go/go$C42_BLD_GO_VERSION.linux-amd64.tar.gz" -O go.tar.gz && \
     tar -C /usr/local -xzf go.tar.gz && \
     rm go.tar.gz
 
 # Go private repository location.
 ARG C42_GOPRIVATE="github.com/ctx42"
-
-# Configure private repositories.
-COPY <<-EOF /etc/gitconfig
-  [url "git@github.com:"]
-  insteadOf = https://github.com/
-  [url "git@bitbucket.org:"]
-  insteadOf = https://bitbucket.org/
-EOF
 
 # Defines root directory.
 ARG C42_CTR_ROOT=/ctx42
@@ -259,13 +257,12 @@ RUN microdnf -y install ca-certificates wget && \
 # ==============================================================================
 FROM $C42_BLD_IMG_RUNTIME AS base
 
-# Configure private repositories (kept for parity with the test image).
-COPY <<-EOF /etc/gitconfig
-  [url "git@github.com:"]
-  insteadOf = https://github.com/
-  [url "git@bitbucket.org:"]
-  insteadOf = https://bitbucket.org/
-EOF
+# Reach the C42_BLD_GIT_SSH_HOSTS git hosts over SSH (kept for parity with the
+# test image): rewrite each https://<host>/ to git@<host>:.
+ARG C42_BLD_GIT_SSH_HOSTS
+RUN IFS=, && for host in $C42_BLD_GIT_SSH_HOSTS; do \
+        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$host" "$host" >> /etc/gitconfig; \
+    done
 
 # Defines root directory.
 ARG C42_CTR_ROOT=/ctx42
