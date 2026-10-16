@@ -27,9 +27,12 @@ gomake :docker:image:build -n dkigo -T base  # build only the given target(s)
 gomake :docker:image:build -n dkigo -l -d    # print the docker commands, run nothing
 ```
 
-Always pass `-n dkigo`: gomake prefixes derived image names with `dki-`, which
-would publish `dki-dkigo-<target>` instead of `dkigo-<target>`. `-l` also tags
-a release `latest` (see [Image Tags](#image-tags)).
+`-n` sets the image name and is optional. Without it, gomake derives the name
+from the repository directory (`C42_PRJ_NAME`) and prefixes it with `dki-`,
+unless it already starts with `dki-` or contains `-dki-`. The dkigo images are
+published as `dkigo-<target>`, so building in this repository takes
+`-n dkigo`; without it they would be `dki-dkigo-<target>`. `-l` also tags a
+release `latest` (see [Image Tags](#image-tags)).
 
 ### Without gomake
 
@@ -149,7 +152,9 @@ import _ "github.com/ctx42/dkigo"
 
 `gomake :docker:image:build` and `gomake :docker:image:push` in that project
 then build dkigo's `Dockerfile` with dkigo's `configs/project.conf` under the
-project's one, and tag the images after the project and its own version.
+project's one, and tag the images after the project and its own version. No
+`-n` is needed: a project in `acme-dki-go` builds `acme-dki-go-base` and
+`acme-dki-go-test`.
 
 ### CA Certificates
 
