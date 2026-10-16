@@ -33,12 +33,15 @@ a release `latest` (see [Image Tags](#image-tags)).
 
 ### Without gomake
 
-If you'd rather not install gomake, [`bin/build.sh`](bin/build.sh) builds the
-same images with nothing but Go and Docker. It sources `configs/project.conf`
-for every build argument (versions, paths, registry), compiles and runs
-[`cmd/scmver`](cmd/scmver) for the version and OCI label metadata — the same
-gmtask code gomake uses, pinned by `go.mod` — and runs `docker buildx build`
-once per target. It tags `latest` automatically for a release.
+Use gomake when you can. If you don't have it, [`bin/build.sh`](bin/build.sh)
+is the fallback: it builds the same images, with the same build arguments and
+tags, using nothing but Go and Docker. It compiles and runs
+[`cmd/cfgenv`](cmd/cfgenv), which resolves `configs/project.conf` and the
+environment overrides the way gomake does, for every build argument (versions,
+paths, registry), and [`cmd/scmver`](cmd/scmver) for the version and OCI label
+metadata — the same gmtask code gomake uses, pinned by `go.mod`. It then runs
+`docker buildx build` once per target and tags `latest` automatically for a
+release. Its log output differs from gomake's.
 
 ```shell
 ./bin/build.sh          # build all targets in C42_BLD_IMG_TARGETS
@@ -90,21 +93,19 @@ The registry in `configs/project.conf` is ctx42's. To build and publish the
 images under your own organization without forking, override it from the
 environment: a variable named like a key in `configs/project.conf` replaces
 that key's value, an empty value included. Variables the file does not declare
-are ignored. Both build paths honor the override and print one
-`override KEY=value` line per overridden key:
+are ignored. Overrides apply before `$VAR` expansion, so a value referring to an
+overridden key follows it: overriding `C42_REG_HOST` alone also moves
+`C42_REG_REPO=$C42_REG_HOST/ctx42`. Both build paths honor the override and
+print one `override KEY=value` line per overridden key:
 
 ```shell
-export C42_REG_HOST=registry.acme.io
-export C42_REG_REPO=registry.acme.io/platform
+export C42_REG_HOST=registry.acme.io       # C42_REG_REPO becomes registry.acme.io/ctx42
+export C42_REG_REPO=registry.acme.io/platform  # or set the repository itself
 export C42_GOPRIVATE=github.com/acme
 
 gomake :docker:image:build -n dkigo -l   # or ./bin/build.sh
 gomake :docker:image:push -n dkigo -l    # or ./bin/push.sh
 ```
-
-Set `C42_REG_REPO` explicitly: both build paths apply overrides after `$VAR`
-expansion, so overriding `C42_REG_HOST` alone keeps the `ghcr.io/ctx42`
-repository.
 
 To point the `go` command in the test image at your own module proxy and
 checksum database, set `C42_GOPROXY` and `C42_GOSUMDB` the same way. The test
@@ -117,9 +118,6 @@ export C42_GOPROXY=https://goproxy.acme.io,direct
 export C42_GOSUMDB="sum.golang.org https://goproxy.acme.io/sumdb"
 ```
 
-Go code importing `github.com/ctx42/dkigo` honors the same overrides: `CfgGet`,
-`CfgLookup`, and `CfgAll` apply them from the process environment, read once on
-first use. Unlike the build paths, they apply them before `$VAR` expansion, so
-a value referring to an overridden key follows it: overriding `C42_REG_HOST`
-alone also moves `C42_REG_REPO`. With every referring key set explicitly, as
-above, both see the same values.
+Go code importing `github.com/ctx42/dkigo` sees the same values: `CfgGet`,
+`CfgLookup`, and `CfgAll` apply the overrides from the process environment the
+same way, read once on first use.

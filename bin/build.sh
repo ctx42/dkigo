@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
 # Build the dkigo images straight from configs/project.conf - no tooling beyond
-# Go and Docker required. Every build argument (versions, paths, registry)
-# comes from that file, unless an environment variable of the same name
-# overrides it; the version and OCI label metadata come from cmd/scmver.
+# Go and Docker required. It is the fallback for those without gomake, which is
+# the preferred way to build the images; for the same environment both build
+# the same images. Every build argument (versions, paths, registry) comes from
+# that file, resolved by cmd/cfgenv, unless an environment variable of the same
+# name overrides it; the version and OCI label metadata come from cmd/scmver.
 #
 # Runs from any working directory — paths resolve relative to this script.
 #
@@ -12,9 +14,8 @@
 #   ./bin/build.sh base     # build only the given target(s)
 #
 # Any key in configs/project.conf can be overridden from the environment, e.g.
-# to build into another registry:
-#   C42_REG_HOST=registry.acme.io C42_REG_REPO=registry.acme.io/platform \
-#       ./bin/build.sh
+# to build into another registry (C42_REG_REPO follows C42_REG_HOST):
+#   C42_REG_HOST=registry.acme.io ./bin/build.sh
 #
 # Optional environment variables (unset = plain local build into the daemon):
 #   C42_BLD_CACHE=gha       # read/write a GitHub Actions layer cache (mode=max)
@@ -35,27 +36,20 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONF="$ROOT/configs/project.conf"
 
-# Load the build configuration. An environment variable named like a key in
-# the file overrides that key's value, an empty value included; the file
-# itself is the list of keys that may be overridden. Save the overriding
-# values before sourcing the file and restore them after it.
-mapfile -t keys < <(sed -nE 's/^([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p' "$CONF")
-declare -A overrides=()
-for key in "${keys[@]}"; do
-	if [ -n "${!key+set}" ]; then
-		overrides[$key]="${!key}"
-	fi
-done
+# Load the build configuration with cmd/cfgenv, which resolves it the way
+# gomake does: an environment variable named like a key in the file overrides
+# that key's value, an empty value included, before $VAR expansion, so values
+# derived from it follow; the file itself is the list of keys that may be
+# overridden. It prints one "[dkigo] override KEY=value" line per overridden
+# key to standard error. The output is captured before it is evaluated so a
+# failing cfgenv stops the script under `set -e`.
+mkdir -p "$ROOT/tmp"
+cfgenv="$ROOT/tmp/cfgenv"
+go -C "$ROOT" build -o "$cfgenv" ./cmd/cfgenv
+cfg_env="$("$cfgenv" "$ROOT")"
 set -a
-# shellcheck disable=SC1090
-. "$CONF"
+eval "$cfg_env"
 set +a
-for key in "${keys[@]}"; do
-	if [ -n "${overrides[$key]+set}" ]; then
-		printf -v "$key" '%s' "${overrides[$key]}"
-		echo "[dkigo] override $key=${overrides[$key]}"
-	fi
-done
 
 # Targets: command-line arguments override C42_BLD_IMG_TARGETS.
 if [ "$#" -gt 0 ]; then
@@ -69,7 +63,6 @@ fi
 # same code gomake stamps binaries with. The output is captured before it is
 # evaluated so a failing scmver stops the script under `set -e`.
 scmver="$ROOT/tmp/scmver"
-mkdir -p "$ROOT/tmp"
 go -C "$ROOT" build -o "$scmver" ./cmd/scmver
 scm_env="$("$scmver" "$ROOT")"
 eval "$scm_env"
