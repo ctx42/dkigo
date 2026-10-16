@@ -339,3 +339,12 @@ ENV C42_BLD_DATE="$C42_BLD_DATE" \
     C42_SCM_HASH="$C42_SCM_HASH" \
     C42_SCM_REV="$C42_SCM_REV" \
     TZ="UTC"
+
+# Go module proxy and checksum database for the go command run in the image.
+# Set in this final stage so the tool installs above always use the go
+# defaults. An empty value - the configs/project.conf default - is the same as
+# unset: the go command falls back to proxy.golang.org and sum.golang.org.
+ARG C42_GOPROXY=""
+ARG C42_GOSUMDB=""
+ENV GOPROXY="$C42_GOPROXY" \
+    GOSUMDB="$C42_GOSUMDB"

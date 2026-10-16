@@ -105,6 +105,17 @@ gomake :docker:image:push -n dkigo -l    # or ./bin/push.sh
 Set `C42_REG_REPO` explicitly: overrides apply after `$VAR` expansion, so
 overriding `C42_REG_HOST` alone keeps the `ghcr.io/ctx42` repository.
 
+To point the `go` command in the test image at your own module proxy and
+checksum database, set `C42_GOPROXY` and `C42_GOSUMDB` the same way. The test
+image sets them as `GOPROXY` and `GOSUMDB`; left empty, as in
+`configs/project.conf`, the `go` defaults apply. The image build itself always
+fetches its tools through the defaults.
+
+```shell
+export C42_GOPROXY=https://goproxy.acme.io,direct
+export C42_GOSUMDB="sum.golang.org https://goproxy.acme.io/sumdb"
+```
+
 Go code importing `github.com/ctx42/dkigo` sees the same values: `CfgGet`,
 `CfgLookup`, and `CfgAll` apply the overrides from the process environment,
 read once on first use.
