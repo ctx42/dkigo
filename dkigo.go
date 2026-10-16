@@ -5,9 +5,11 @@
 // An environment variable named like a configuration key overrides that key's
 // value, an empty value included; variables the configuration does not declare
 // are ignored. This lets an organization point the registry keys at its own
-// registry. Overrides apply after variable expansion, so overriding
-// C42_REG_HOST leaves C42_REG_REPO unchanged. The environment is read once, on
-// the first call to any function in the package.
+// registry. Overrides apply before variable expansion, so a value referring to
+// an overridden key follows it: overriding C42_REG_HOST also moves
+// C42_REG_REPO, and overriding C42_CTR_ROOT moves the paths derived from it.
+// The environment is read once, on the first call to any function in the
+// package.
 //
 // Import it as github.com/ctx42/dkigo:
 //
@@ -36,19 +38,19 @@ var prjCfg = sync.OnceValue(func() map[string]string {
 //go:embed configs/project.conf
 var embedded embed.FS
 
-// parseCfg parses the embedded project configuration and applies the
-// overrides from env, given in [os.Environ] form. It panics when the embedded
-// configuration cannot be read or parsed.
+// parseCfg parses the embedded project configuration with the overrides from
+// env, given in [os.Environ] form, applied before variable expansion. It
+// panics when the embedded configuration cannot be read or parsed.
 func parseCfg(env []string) map[string]string {
 	rawProjCfg, err := embedded.ReadFile("configs/project.conf")
 	if err != nil {
 		panic(err)
 	}
-	cfg := make(map[string]string)
-	if err = dotenv.Parse(cfg, bytes.NewReader(rawProjCfg)); err != nil {
+	var lay dotenv.Layers
+	if err = lay.Read(bytes.NewReader(rawProjCfg)); err != nil {
 		panic(err)
 	}
-	dotenv.Override(cfg, env)
+	cfg, _ := lay.Expand(env)
 	return cfg
 }
 

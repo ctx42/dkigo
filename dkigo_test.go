@@ -74,6 +74,37 @@ func Test_parseCfg(t *testing.T) {
 		assert.HasKeyValue(t, xdef.EnvRegHost, "ghcr.io", have)
 	})
 
+	t.Run("environment override moves derived keys", func(t *testing.T) {
+		// --- Given ---
+		env := []string{
+			xdef.EnvRegHost + "=registry.acme.io",
+			xdef.EnvCtrRoot + "=/vrinf",
+		}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		assert.HasKeyValue(t, xdef.EnvRegRepo, "registry.acme.io/ctx42", have)
+		assert.HasKeyValue(t, "C42_BLD_GOPATH", "/vrinf/go", have)
+		assert.HasKeyValue(t, xdef.EnvCtrBin, "/vrinf/bin", have)
+	})
+
+	t.Run("explicit derived key kept", func(t *testing.T) {
+		// --- Given ---
+		env := []string{
+			xdef.EnvRegHost + "=registry.acme.io",
+			xdef.EnvRegRepo + "=registry.acme.io/platform",
+		}
+
+		// --- When ---
+		have := parseCfg(env)
+
+		// --- Then ---
+		repo := "registry.acme.io/platform"
+		assert.HasKeyValue(t, xdef.EnvRegRepo, repo, have)
+	})
+
 	t.Run("empty environment value overrides", func(t *testing.T) {
 		// --- Given ---
 		env := []string{xdef.EnvRegRepo + "="}
