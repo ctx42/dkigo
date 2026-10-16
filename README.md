@@ -102,8 +102,9 @@ gomake :docker:image:build -n dkigo -l   # or ./bin/build.sh
 gomake :docker:image:push -n dkigo -l    # or ./bin/push.sh
 ```
 
-Set `C42_REG_REPO` explicitly: overrides apply after `$VAR` expansion, so
-overriding `C42_REG_HOST` alone keeps the `ghcr.io/ctx42` repository.
+Set `C42_REG_REPO` explicitly: both build paths apply overrides after `$VAR`
+expansion, so overriding `C42_REG_HOST` alone keeps the `ghcr.io/ctx42`
+repository.
 
 To point the `go` command in the test image at your own module proxy and
 checksum database, set `C42_GOPROXY` and `C42_GOSUMDB` the same way. The test
@@ -116,6 +117,9 @@ export C42_GOPROXY=https://goproxy.acme.io,direct
 export C42_GOSUMDB="sum.golang.org https://goproxy.acme.io/sumdb"
 ```
 
-Go code importing `github.com/ctx42/dkigo` sees the same values: `CfgGet`,
-`CfgLookup`, and `CfgAll` apply the overrides from the process environment,
-read once on first use.
+Go code importing `github.com/ctx42/dkigo` honors the same overrides: `CfgGet`,
+`CfgLookup`, and `CfgAll` apply them from the process environment, read once on
+first use. Unlike the build paths, they apply them before `$VAR` expansion, so
+a value referring to an overridden key follows it: overriding `C42_REG_HOST`
+alone also moves `C42_REG_REPO`. With every referring key set explicitly, as
+above, both see the same values.
