@@ -121,3 +121,32 @@ export C42_GOSUMDB="sum.golang.org https://goproxy.acme.io/sumdb"
 Go code importing `github.com/ctx42/dkigo` sees the same values: `CfgGet`,
 `CfgLookup`, and `CfgAll` apply the overrides from the process environment the
 same way, read once on first use.
+
+## Build from Your Own Project
+
+Instead of building in a dkigo checkout, an organization can keep a small
+project of its own that builds images from the dkigo `Dockerfile` with its own
+values. gomake supports this as a Dockerfile module build (see
+[gmtask's gmdkr](https://github.com/ctx42/gmtask/tree/master/pkg/gmdkr)): the
+project's `go.mod` requires `github.com/ctx42/dkigo` at the version to build
+from, and its `configs/project.conf` names the module and sets only the values
+that differ:
+
+```ini
+# configs/project.conf
+C42_BLD_DKF_MODULE=github.com/ctx42/dkigo
+C42_CTR_ROOT=/opt/acme
+C42_REG_HOST=registry.acme.io
+C42_REG_REPO=$C42_REG_HOST/platform
+```
+
+```go
+// deps_test.go - keeps go mod tidy from dropping the requirement.
+package project
+
+import _ "github.com/ctx42/dkigo"
+```
+
+`gomake :docker:image:build` and `gomake :docker:image:push` in that project
+then build dkigo's `Dockerfile` with dkigo's `configs/project.conf` under the
+project's one, and tag the images after the project and its own version.
