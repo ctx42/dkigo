@@ -1,3 +1,6 @@
+## v0.8.2 (Fri, 16 Oct 2026 13:25:21 UTC)
+- build(deps): update gmtask to v0.17.0.
+
 ## v0.8.1 (Fri, 16 Oct 2026 11:52:39 UTC)
 - build: set gomake and gmtask versions in project.conf again.
 
