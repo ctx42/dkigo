@@ -1,3 +1,6 @@
+## v0.8.0 (Fri, 16 Oct 2026 11:42:08 UTC)
+- feat(docker): set GOPROXY and GOSUMDB in the test image.
+
 ## v0.7.3 (Thu, 15 Oct 2026 15:12:57 UTC)
 - build: take gomake and gmtask versions from go.mod.
 - chore(deps): update dependencies.
