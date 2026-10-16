@@ -1,3 +1,6 @@
+## v0.8.1 (Fri, 16 Oct 2026 11:52:39 UTC)
+- build: set gomake and gmtask versions in project.conf again.
+
 ## v0.8.0 (Fri, 16 Oct 2026 11:42:08 UTC)
 - feat(docker): set GOPROXY and GOSUMDB in the test image.
 
