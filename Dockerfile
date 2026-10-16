@@ -200,11 +200,23 @@ RUN CGO_ENABLED=0 go install github.com/golangci/golangci-lint/v2/cmd/golangci-l
     go install github.com/boumenot/gocover-cobertura@latest && \
     rm -rf $GOPATH/* && rm -rf $GOCACHE/*
 
-# Pull the shared golangci-lint configuration. It lives at the container root so
-# golangci-lint auto-discovers it from $C42_CTR_PRJ_ROOT as a fallback when a
-# project provides no .golangci.yml of its own.
-ARG C42_BLD_XDEV_VERSION
-RUN wget https://raw.githubusercontent.com/ctx42/xdev/$C42_BLD_XDEV_VERSION/.golangci.yml -O $C42_CTR_ROOT/.golangci.yml
+# Pull the shared golangci-lint configuration from C42_BLD_GOLINT_CONFIG, in
+# either form gomake's :go:lint:config takes: an https URL whose path does not
+# end in ".git" is the file itself, any other value a git repository whose
+# default branch holds .golangci.yml; empty installs none. It lives at the
+# container root so golangci-lint auto-discovers it from $C42_CTR_PRJ_ROOT as a
+# fallback when a project provides no .golangci.yml of its own.
+ARG C42_BLD_GOLINT_CONFIG
+RUN --mount=type=ssh src="$C42_BLD_GOLINT_CONFIG" && \
+    if [ -z "$src" ]; then \
+        true; \
+    elif [ "${src#https://}" != "$src" ] && [ "${src%.git}" = "$src" ]; then \
+        wget "$src" -O $C42_CTR_ROOT/.golangci.yml; \
+    else \
+        git clone --depth 1 --single-branch --no-tags "$src" /tmp/golint && \
+        cp /tmp/golint/.golangci.yml $C42_CTR_ROOT/.golangci.yml && \
+        rm -rf /tmp/golint; \
+    fi
 
 # Install the gomake tool with gmtask's targets compiled in. gomake and gmtask
 # are public, so override the private-repo GOPRIVATE to fetch them through the

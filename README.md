@@ -184,3 +184,20 @@ value configures no host.
 # configs/project.conf
 C42_BLD_GIT_SSH_HOSTS=git.acme.io
 ```
+
+### Shared Lint Configuration
+
+The test image installs a shared golangci-lint configuration as
+`$C42_CTR_ROOT/.golangci.yml`, which golangci-lint finds from the project
+directory when the project has no `.golangci.yml` of its own. It comes from
+`C42_BLD_GOLINT_CONFIG`, the key gomake's `:go:lint:config` reads, in either of
+its forms: an `https://` URL whose path does not end in `.git` is the file
+itself; any other value is a git repository whose default branch holds
+`.golangci.yml`, cloned over SSH when the URL or `C42_BLD_GIT_SSH_HOSTS` says
+so. The default is ctx42's xdev file at `C42_BLD_XDEV_VERSION`; an empty value
+installs none.
+
+```ini
+# configs/project.conf
+C42_BLD_GOLINT_CONFIG=git@git.acme.io:platform/dev.git
+```

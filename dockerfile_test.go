@@ -65,3 +65,17 @@ func Test_Dockerfile_gitSSHHosts(t *testing.T) {
 	want := "ssh-keyscan -t rsa \"$@\" >> /etc/ssh/ssh_known_hosts"
 	assert.Contain(t, want, dkf)
 }
+
+func Test_Dockerfile_golintConfig(t *testing.T) {
+	// --- Given ---
+	dkf := oskit.ReadFileStr(t, "Dockerfile")
+
+	// --- When ---
+	have := strings.Count(dkf, "\nARG C42_BLD_GOLINT_CONFIG\n")
+
+	// --- Then ---
+	assert.Equal(t, 1, have)
+	assert.NotContain(t, "xdev", dkf)
+	assert.Contain(t, "wget \"$src\" -O $C42_CTR_ROOT/.golangci.yml", dkf)
+	assert.Contain(t, "cp /tmp/golint/.golangci.yml $C42_CTR_ROOT/", dkf)
+}

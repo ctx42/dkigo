@@ -16,6 +16,9 @@ func Test_parseCfg(t *testing.T) {
 		have := parseCfg(nil)
 
 		// --- Then ---
+		lintCfg := "" +
+			"https://raw.githubusercontent.com/ctx42/xdev/" +
+			"v0.1.0/.golangci.yml"
 		want := map[string]string{
 			xdef.EnvBldImgBase:              "almalinux:9.8-minimal",
 			xdef.EnvBldImgRuntime:           "almalinux/9-micro:9.8",
@@ -42,6 +45,7 @@ func Test_parseCfg(t *testing.T) {
 			"C42_BLD_GOPATH":                "/ctx42/go",
 			"C42_BLD_GO_VERSION":            "1.26.2",
 			"C42_BLD_XDEV_VERSION":          "v0.1.0",
+			"C42_BLD_GOLINT_CONFIG":         lintCfg,
 			"C42_BLD_GIT_SSH_HOSTS":         "github.com,bitbucket.org",
 		}
 		assert.Equal(t, want, have)
