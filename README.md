@@ -150,3 +150,19 @@ import _ "github.com/ctx42/dkigo"
 `gomake :docker:image:build` and `gomake :docker:image:push` in that project
 then build dkigo's `Dockerfile` with dkigo's `configs/project.conf` under the
 project's one, and tag the images after the project and its own version.
+
+### CA Certificates
+
+Both images trust the CA certificates the project keeps in `configs/ca/*.crt`,
+for example the CA of a registry, a module proxy, or a TLS-intercepting proxy.
+They are added to the trust store before the image build downloads anything,
+so `microdnf`, `wget`, `curl`, `git`, `go`, and `docker` in the images all
+trust them. Without the directory, or with no `.crt` file in it, the trust
+store is the one the base image ships.
+
+```text
+configs/
+├── ca/
+│   └── acme-root.crt     # PEM certificate
+└── project.conf
+```

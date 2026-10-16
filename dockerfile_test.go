@@ -37,3 +37,16 @@ func Test_Dockerfile_scriptsExecutable(t *testing.T) {
 	assert.Equal(t, 4, have)
 	assert.NotContain(t, "\nCOPY scripts/", dkf)
 }
+
+func Test_Dockerfile_projectCA(t *testing.T) {
+	// --- Given ---
+	dkf := oskit.ReadFileStr(t, "Dockerfile")
+
+	// --- When ---
+	have := strings.Count(dkf, "\nRUN --mount=type=bind,from=project,")
+
+	// --- Then ---
+	assert.Equal(t, 2, have)
+	assert.Contain(t, "\nFROM scratch AS project\n", dkf)
+	assert.Contain(t, "cp \"$@\" /etc/pki/ca-trust/source/anchors/", dkf)
+}
