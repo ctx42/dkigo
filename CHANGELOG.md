@@ -1,3 +1,16 @@
+## v0.9.0 (Fri, 16 Oct 2026 21:08:47 UTC)
+- fix(docker): copy container scripts with mode 0755.
+- build(deps): update dotenv to v0.7.0.
+- feat!: apply config overrides before variable expansion.
+- docs: describe the override order of the Go package.
+- feat(cfgenv): add command printing the build configuration.
+- feat(bin)!: resolve the build configuration with cmd/cfgenv.
+- docs: describe building images from your own project.
+- feat(docker): trust the building project's CA certificates.
+- feat(docker): configure the git hosts reached over SSH.
+- docs: explain how gomake names the images.
+- feat(docker): configure the shared golangci-lint configuration.
+
 ## v0.8.2 (Fri, 16 Oct 2026 13:25:21 UTC)
 - build(deps): update gmtask to v0.17.0.
 
