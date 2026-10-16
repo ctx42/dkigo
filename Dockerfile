@@ -83,8 +83,9 @@ RUN microdnf -y install wget && \
     chmod +x $C42_CTR_BIN/tini && \
     microdnf -y clean all
 
-COPY scripts/keep_ctr_alive.sh $C42_CTR_BIN
-COPY scripts/run_scripts.sh $C42_CTR_BIN
+# Set the mode: a build from the Go module cache gets read-only files.
+COPY --chmod=0755 scripts/keep_ctr_alive.sh $C42_CTR_BIN
+COPY --chmod=0755 scripts/run_scripts.sh $C42_CTR_BIN
 
 WORKDIR $C42_CTR_PRJ_ROOT
 
@@ -284,8 +285,9 @@ RUN mkdir -p $C42_CTR_ROOT && chmod go+rwx $C42_CTR_ROOT && \
 COPY --from=base-builder /etc/pki /etc/pki
 COPY --from=base-builder /tini $C42_CTR_BIN/tini
 
-COPY scripts/keep_ctr_alive.sh $C42_CTR_BIN
-COPY scripts/run_scripts.sh $C42_CTR_BIN
+# Set the mode: a build from the Go module cache gets read-only files.
+COPY --chmod=0755 scripts/keep_ctr_alive.sh $C42_CTR_BIN
+COPY --chmod=0755 scripts/run_scripts.sh $C42_CTR_BIN
 
 WORKDIR $C42_CTR_PRJ_ROOT
 

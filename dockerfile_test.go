@@ -25,3 +25,15 @@ func Test_Dockerfile_testGoProxy(t *testing.T) {
 		"    GOSUMDB=\"$C42_GOSUMDB\"\n"
 	assert.Contain(t, want, have)
 }
+
+func Test_Dockerfile_scriptsExecutable(t *testing.T) {
+	// --- Given ---
+	dkf := oskit.ReadFileStr(t, "Dockerfile")
+
+	// --- When ---
+	have := strings.Count(dkf, "\nCOPY --chmod=0755 scripts/")
+
+	// --- Then ---
+	assert.Equal(t, 4, have)
+	assert.NotContain(t, "\nCOPY scripts/", dkf)
+}
