@@ -1,3 +1,6 @@
+## v0.9.3 (Sat, 17 Oct 2026 16:37:21 UTC)
+- perf(docker): cache the CA trust layers on the certificates alone.
+
 ## v0.9.2 (Sat, 17 Oct 2026 13:32:41 UTC)
 - fix(deps): require gomake v0.31.2 and gmtask v0.19.0 in go.mod.
 - test: keep Test_parseCfg independent of pinned versions.
