@@ -10,13 +10,17 @@ Package provides base images for Go projects:
 The preferred way to build and push the images is
 [gomake](https://github.com/ctx42/gomake) with the `:docker:*` targets from
 [gmtask](https://github.com/ctx42/gmtask) compiled in — the same tool every
-ctx42 project builds its images with. Install the versions `configs/project.conf`
-pins:
+ctx42 project builds its images with. From the repository root, install the
+versions `configs/project.conf` pins:
 
 ```shell
-mkdir -p /tmp/gomake-install && cd /tmp/gomake-install && go mod init gomake-install
-GOFLAGS=-mod=mod go run github.com/ctx42/gomake/cmd/install@v0.30.1 \
-    --targets=https://raw.githubusercontent.com/ctx42/gmtask/v0.14.0/targets.yaml
+eval "$(grep -E '^C42_BLD_(GOMAKE|GMTASK)_VERSION=' configs/project.conf)"
+raw=https://raw.githubusercontent.com/ctx42/gmtask
+cd "$(mktemp -d)" && go mod init gomake-install
+GOFLAGS=-mod=mod go run \
+    github.com/ctx42/gomake/cmd/install@$C42_BLD_GOMAKE_VERSION \
+    --targets=$raw/$C42_BLD_GMTASK_VERSION/targets.yaml
+cd -
 ```
 
 Then, from the repository root:
