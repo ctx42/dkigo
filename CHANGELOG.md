@@ -1,3 +1,7 @@
+## v0.9.2 (Sat, 17 Oct 2026 13:32:41 UTC)
+- fix(deps): require gomake v0.31.2 and gmtask v0.19.0 in go.mod.
+- test: keep Test_parseCfg independent of pinned versions.
+
 ## v0.9.1 (Sat, 17 Oct 2026 10:26:51 UTC)
 - build(deps): update gomake to v0.31.2 and gmtask to v0.19.0.
 
