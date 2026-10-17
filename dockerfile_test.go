@@ -86,3 +86,22 @@ func Test_Dockerfile_golintConfig(t *testing.T) {
 	assert.Contain(t, "wget \"$src\" -O $C42_CTR_ROOT/.golangci.yml", dkf)
 	assert.Contain(t, "cp /tmp/golint/.golangci.yml $C42_CTR_ROOT/", dkf)
 }
+
+func Test_Dockerfile_anyUserHome(t *testing.T) {
+	// The test image runs as users with no account in it. Its home must be
+	// writable by any of them and set after the last build step, so no step
+	// running as root leaves files there that the user cannot change.
+
+	// --- Given ---
+	dkf := oskit.ReadFileStr(t, "Dockerfile")
+
+	// --- When ---
+	_, have, found := strings.Cut(dkf, "\nFROM src-test AS test\n")
+
+	// --- Then ---
+	assert.True(t, found)
+	assert.Contain(t, "mkdir -p -m 1777 \"$C42_CTR_ROOT/home\"", have)
+	assert.Contain(t, "chmod go+rwx \"$GOLANGCI_LINT_CACHE\"", have)
+	want := "\nENV HOME=\"$C42_CTR_ROOT/home\"\n"
+	assert.True(t, strings.HasSuffix(have, want))
+}

@@ -406,3 +406,12 @@ ARG C42_GOPROXY=""
 ARG C42_GOSUMDB=""
 ENV GOPROXY="$C42_GOPROXY" \
     GOSUMDB="$C42_GOSUMDB"
+
+# CI runs the image as the agent's own user, which has no account here and so
+# gets "/" as its home. Give any user a writable home, so the docker, git, and
+# Go tools can keep their state there, and create the golangci-lint cache. Set
+# last, so no build step above leaves root-owned files in that home.
+RUN mkdir -p -m 1777 "$C42_CTR_ROOT/home" && \
+    mkdir -p "$GOLANGCI_LINT_CACHE" && \
+    chmod go+rwx "$GOLANGCI_LINT_CACHE"
+ENV HOME="$C42_CTR_ROOT/home"
