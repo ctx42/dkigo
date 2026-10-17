@@ -18,35 +18,47 @@ func Test_parseCfg(t *testing.T) {
 		// --- Then ---
 		lintCfg := "" +
 			"https://raw.githubusercontent.com/ctx42/xdev/" +
-			"v0.1.0/.golangci.yml"
+			have["C42_BLD_XDEV_VERSION"] + "/.golangci.yml"
+		assert.HasKeyValue(t, "C42_BLD_GOLINT_CONFIG", lintCfg, have)
+
+		// Versions and base image tags change with every update, so they
+		// are only required to be set; Test_moduleVersions_tabular checks
+		// the module versions against go.mod.
+		versioned := []string{
+			xdef.EnvBldImgBase,
+			xdef.EnvBldImgRuntime,
+			"C42_BLD_DOCKER_BUILDX_VERSION",
+			"C42_BLD_DOCKER_CLI_VERSION",
+			"C42_BLD_GMTASK_VERSION",
+			"C42_BLD_GOLANGCI_LINT_VERSION",
+			"C42_BLD_GOLINT_CONFIG",
+			"C42_BLD_GOMAKE_VERSION",
+			"C42_BLD_GO_VERSION",
+			"C42_BLD_TINI_VERSION",
+			"C42_BLD_XDEV_VERSION",
+		}
+		for _, key := range versioned {
+			assert.NotEmpty(t, have[key], "key %s", key)
+			delete(have, key)
+		}
+
 		want := map[string]string{
-			xdef.EnvBldImgBase:              "almalinux:9.8-minimal",
-			xdef.EnvBldImgRuntime:           "almalinux/9-micro:9.8",
-			xdef.EnvRegHost:                 "ghcr.io",
-			xdef.EnvRegScheme:               "https",
-			xdef.EnvRegRepo:                 "ghcr.io/ctx42",
-			xdef.EnvBldImgTargets:           "base,test",
-			xdef.EnvCtrPrjRoot:              "/ctx42/project",
-			xdef.EnvCtrRoot:                 "/ctx42",
-			xdef.EnvGoPrivate:               "",
-			xdef.EnvGoProxy:                 "",
-			xdef.EnvGoSumDB:                 "",
-			xdef.EnvCtrEntrypoint:           "/ctx42/entrypoint",
-			xdef.EnvCtrBin:                  "/ctx42/bin",
-			"C42_BLD_DOCKER_BUILDX_VERSION": "v0.35.0",
-			"C42_BLD_DOCKER_CLI_VERSION":    "29.6.1",
-			"C42_BLD_TINI_VERSION":          "v0.19.0",
-			"C42_BLD_GOBIN":                 "/ctx42/go-bin",
-			"C42_BLD_GOCACHE":               "/ctx42/go-cache",
-			"C42_BLD_GMTASK_VERSION":        "v0.17.0",
-			"C42_BLD_GOLANGCI_LINT_VERSION": "v2.12.2",
-			"C42_BLD_GOLINT_CACHE":          "/ctx42/go-cache-lint",
-			"C42_BLD_GOMAKE_VERSION":        "v0.31.1",
-			"C42_BLD_GOPATH":                "/ctx42/go",
-			"C42_BLD_GO_VERSION":            "1.26.2",
-			"C42_BLD_XDEV_VERSION":          "v0.1.0",
-			"C42_BLD_GOLINT_CONFIG":         lintCfg,
-			"C42_BLD_GIT_SSH_HOSTS":         "github.com,bitbucket.org",
+			xdef.EnvRegHost:         "ghcr.io",
+			xdef.EnvRegScheme:       "https",
+			xdef.EnvRegRepo:         "ghcr.io/ctx42",
+			xdef.EnvBldImgTargets:   "base,test",
+			xdef.EnvCtrPrjRoot:      "/ctx42/project",
+			xdef.EnvCtrRoot:         "/ctx42",
+			xdef.EnvGoPrivate:       "",
+			xdef.EnvGoProxy:         "",
+			xdef.EnvGoSumDB:         "",
+			xdef.EnvCtrEntrypoint:   "/ctx42/entrypoint",
+			xdef.EnvCtrBin:          "/ctx42/bin",
+			"C42_BLD_GOBIN":         "/ctx42/go-bin",
+			"C42_BLD_GOCACHE":       "/ctx42/go-cache",
+			"C42_BLD_GOLINT_CACHE":  "/ctx42/go-cache-lint",
+			"C42_BLD_GOPATH":        "/ctx42/go",
+			"C42_BLD_GIT_SSH_HOSTS": "github.com,bitbucket.org",
 		}
 		assert.Equal(t, want, have)
 	})
