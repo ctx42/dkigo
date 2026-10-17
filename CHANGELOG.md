@@ -1,3 +1,6 @@
+## v0.10.0 (Sat, 17 Oct 2026 18:18:12 UTC)
+- fix(docker)!: give any user of the test image a writable home.
+
 ## v0.9.3 (Sat, 17 Oct 2026 16:37:21 UTC)
 - perf(docker): cache the CA trust layers on the certificates alone.
 
