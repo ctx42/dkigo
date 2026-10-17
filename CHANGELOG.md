@@ -1,3 +1,6 @@
+## v0.9.1 (Sat, 17 Oct 2026 10:26:51 UTC)
+- build(deps): update gomake to v0.31.2 and gmtask to v0.19.0.
+
 ## v0.9.0 (Fri, 16 Oct 2026 21:08:47 UTC)
 - fix(docker): copy container scripts with mode 0755.
 - build(deps): update dotenv to v0.7.0.
