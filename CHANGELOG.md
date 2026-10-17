@@ -1,3 +1,6 @@
+## v0.10.1 (Sat, 17 Oct 2026 20:28:50 UTC)
+- build(deps): update gomake to v0.31.4, gmtask to v0.20.1, xdef to v0.10.0.
+
 ## v0.10.0 (Sat, 17 Oct 2026 18:18:12 UTC)
 - fix(docker)!: give any user of the test image a writable home.
 
