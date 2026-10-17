@@ -14,7 +14,7 @@
 # "src-base" and "src-test" are intermediates for the test image - use "test".
 #
 # Both images trust the CA certificates of the project building them, read
-# from configs/ca/*.crt in the "project" build context.
+# from configs/ca/*.crt in the "project" build context through "project-ca".
 # ==============================================================================
 ARG C42_BLD_IMG_BASE
 ARG C42_BLD_IMG_RUNTIME
@@ -26,13 +26,29 @@ ARG C42_BLD_IMG_RUNTIME
 # ==============================================================================
 FROM scratch AS project
 
+# ==============================================================================
+# The project's CA certificates, configs/ca/*.crt, alone in /ca. Only this
+# stage reads the whole "project" context, which changes with any file of the
+# project. The images mount /ca from here, and a mount with a source is cached
+# on that path's content, so their layers stay cached until a certificate
+# changes.
+# ==============================================================================
+FROM $C42_BLD_IMG_BASE AS project-ca
+
+RUN --mount=type=bind,from=project,target=/project \
+    mkdir /ca && \
+    set -- /project/configs/ca/*.crt && \
+    if [ -e "$1" ]; then \
+        cp "$@" /ca/; \
+    fi
+
 FROM $C42_BLD_IMG_BASE AS src-base
 
-# Trust the project's CA certificates, configs/ca/*.crt read from the "project"
-# build context, before anything is downloaded, so a TLS-intercepting proxy
-# works too. Without any, the trust store is left as it is.
-RUN --mount=type=bind,from=project,target=/project \
-    set -- /project/configs/ca/*.crt && \
+# Trust the project's CA certificates, from "project-ca", before anything is
+# downloaded, so a TLS-intercepting proxy works too. Without any, the trust
+# store is left as it is.
+RUN --mount=type=bind,from=project-ca,source=/ca,target=/ca \
+    set -- /ca/*.crt && \
     if [ -e "$1" ]; then \
         cp "$@" /etc/pki/ca-trust/source/anchors/ && \
         update-ca-trust extract; \
@@ -245,11 +261,11 @@ RUN export GOPRIVATE= && \
 # ==============================================================================
 FROM $C42_BLD_IMG_BASE AS base-builder
 
-# Trust the project's CA certificates, configs/ca/*.crt read from the "project"
-# build context, before anything is downloaded, so a TLS-intercepting proxy
-# works too. Without any, the trust store is left as it is.
-RUN --mount=type=bind,from=project,target=/project \
-    set -- /project/configs/ca/*.crt && \
+# Trust the project's CA certificates, from "project-ca", before anything is
+# downloaded, so a TLS-intercepting proxy works too. Without any, the trust
+# store is left as it is.
+RUN --mount=type=bind,from=project-ca,source=/ca,target=/ca \
+    set -- /ca/*.crt && \
     if [ -e "$1" ]; then \
         cp "$@" /etc/pki/ca-trust/source/anchors/ && \
         update-ca-trust extract; \

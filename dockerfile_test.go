@@ -39,15 +39,22 @@ func Test_Dockerfile_scriptsExecutable(t *testing.T) {
 }
 
 func Test_Dockerfile_projectCA(t *testing.T) {
+	// Only "project-ca" may read the whole project context: the images mount
+	// /ca from it, so their layers are cached on the certificates alone.
+
 	// --- Given ---
 	dkf := oskit.ReadFileStr(t, "Dockerfile")
+	mntCA := "\nRUN --mount=type=bind,from=project-ca,source=/ca,"
 
 	// --- When ---
-	have := strings.Count(dkf, "\nRUN --mount=type=bind,from=project,")
+	hPrj := strings.Count(dkf, "\nRUN --mount=type=bind,from=project,")
+	hCA := strings.Count(dkf, mntCA)
 
 	// --- Then ---
-	assert.Equal(t, 2, have)
+	assert.Equal(t, 1, hPrj)
+	assert.Equal(t, 2, hCA)
 	assert.Contain(t, "\nFROM scratch AS project\n", dkf)
+	assert.Contain(t, "\nFROM $C42_BLD_IMG_BASE AS project-ca\n", dkf)
 	assert.Contain(t, "cp \"$@\" /etc/pki/ca-trust/source/anchors/", dkf)
 }
 
