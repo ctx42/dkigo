@@ -20,6 +20,9 @@ permissions:
   contents: read   # checkout
   packages: write  # push to ghcr.io
 
+env:
+  C42_CC_RUN_ID: github-${{ github.repository }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   images:
     runs-on: ubuntu-latest
