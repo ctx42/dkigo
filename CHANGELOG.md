@@ -1,3 +1,8 @@
+## v0.10.2 (Sun, 18 Oct 2026 08:26:00 UTC)
+- docs: install gomake at the versions project.conf pins.
+- ci: set C42_CC_RUN_ID in the workflow environment.
+- chore(deps): update dependencies.
+
 ## v0.10.1 (Sat, 17 Oct 2026 20:28:50 UTC)
 - build(deps): update gomake to v0.31.4, gmtask to v0.20.1, xdef to v0.10.0.
 
