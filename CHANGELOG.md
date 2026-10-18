@@ -1,3 +1,6 @@
+## v0.10.3 (Sun, 18 Oct 2026 10:23:32 UTC)
+- fix(configs): pin gomake v0.31.5 and gmtask v0.20.2.
+
 ## v0.10.2 (Sun, 18 Oct 2026 08:26:00 UTC)
 - docs: install gomake at the versions project.conf pins.
 - ci: set C42_CC_RUN_ID in the workflow environment.
