@@ -1,3 +1,6 @@
+## v0.11.0 (Tue, 20 Oct 2026 12:28:30 UTC)
+- feat!: build the base image on AlmaLinux minimal.
+
 ## v0.10.3 (Sun, 18 Oct 2026 10:23:32 UTC)
 - fix(configs): pin gomake v0.31.5 and gmtask v0.20.2.
 
