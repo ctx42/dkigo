@@ -390,14 +390,11 @@ LABEL org.opencontainers.image.created="$C42_BLD_DATE" \
       org.opencontainers.image.revision="$C42_SCM_HASH" \
       org.opencontainers.image.version="$C42_SCM_REV"
 
-# ctx42 environment variables expected in all images. The OCI metadata is
-# carried by the labels above only; xdef dropped the OCI_IMAGE_* variables
-# that used to mirror them.
-ENV C42_BLD_DATE="$C42_BLD_DATE" \
-    C42_SCM_REPO="$C42_SCM_REPO" \
-    C42_SCM_HASH="$C42_SCM_HASH" \
-    C42_SCM_REV="$C42_SCM_REV" \
-    TZ="UTC"
+# Unlike the runtime base, the build image does not export its own build
+# metadata: gomake reads C42_BLD_DATE from the environment, so a build run in
+# this image would stamp the image's build date into what it builds. The
+# labels above describe the image.
+ENV TZ="UTC"
 
 # Go module proxy and checksum database for the go command run in the image.
 # Set in this final stage so the tool installs above always use the go
