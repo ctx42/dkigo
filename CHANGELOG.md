@@ -1,3 +1,6 @@
+## v0.12.0 (Tue, 20 Oct 2026 13:10:05 UTC)
+- fix!: stop exporting the test image's build metadata.
+
 ## v0.11.0 (Tue, 20 Oct 2026 12:28:30 UTC)
 - feat!: build the base image on AlmaLinux minimal.
 
