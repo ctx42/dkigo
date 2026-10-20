@@ -6,8 +6,9 @@
 # bin/build.sh always passes from configs/project.conf. They have no defaults
 # here so the two cannot drift, hence the skipped check above.
 #
-#   base - tiny runtime base on almalinux micro (no toolchain, no package
-#          manager); this is what deployable services build FROM.
+#   base - runtime base on almalinux minimal (no toolchain; microdnf and
+#          useradd for the services' own stages); this is what deployable
+#          services build FROM.
 #   test - full build/test image on almalinux minimal, adding the Go toolchain
 #          on top of the "src-base"/"src-test" intermediates.
 #
@@ -255,9 +256,9 @@ RUN export GOPRIVATE= && \
     cd / && rm -rf /tmp/gomake-install $GOPATH/* $GOCACHE/*
 
 # ==============================================================================
-# Supplies the runtime artifacts the micro base lacks: the CA trust store and a
-# static tini. Runs on minimal only because it needs a package manager; nothing
-# ships from here except the two artifacts copied into "base".
+# Supplies the runtime artifacts of "base": the CA trust store with the
+# project's certificates and a static tini. Nothing ships from here except the
+# two artifacts copied into "base".
 # ==============================================================================
 FROM $C42_BLD_IMG_BASE AS base-builder
 
@@ -278,9 +279,9 @@ RUN microdnf -y install ca-certificates wget && \
     microdnf -y clean all
 
 # ==============================================================================
-# Tiny runtime base on almalinux micro. Micro ships bash, coreutils and tzdata
-# but no package manager and no CA store; the CA store and tini come from
-# "base-builder". Do not add microdnf here - there is none.
+# Runtime base on almalinux minimal: bash, coreutils, tzdata, microdnf and
+# shadow-utils, so a service's own stage can install packages and add its
+# user; the CA store and tini come from "base-builder".
 # NOTE: This is the image you want to use instead of "src-base".
 # ==============================================================================
 FROM $C42_BLD_IMG_RUNTIME AS base
@@ -337,7 +338,7 @@ RUN mkdir -p $C42_CTR_ROOT && chmod go+rwx $C42_CTR_ROOT && \
     mkdir -p /etc/profile.d && \
     echo 'alias ll="ls -al"' >> /etc/profile.d/ctx42.sh
 
-# Runtime artifacts micro lacks: the CA trust store and a static init.
+# The CA trust store with the project's certificates and a static init.
 COPY --from=base-builder /etc/pki /etc/pki
 COPY --from=base-builder /tini $C42_CTR_BIN/tini
 

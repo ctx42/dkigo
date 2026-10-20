@@ -2,7 +2,7 @@
 
 Package provides base images for Go projects:
 
-- ghcr.io/ctx42/dkigo-base:vX.Y.Z — tiny runtime base on AlmaLinux micro.
+- ghcr.io/ctx42/dkigo-base:vX.Y.Z — runtime base on AlmaLinux minimal.
 - ghcr.io/ctx42/dkigo-test:vX.Y.Z — full build/test image on AlmaLinux minimal.
 
 ## Build Images
