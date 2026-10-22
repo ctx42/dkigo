@@ -1,3 +1,6 @@
+## v0.13.0 (Thu, 22 Oct 2026 14:18:24 UTC)
+- feat: map git hosts to a separate SSH host name.
+
 ## v0.12.2 (Thu, 22 Oct 2026 07:32:24 UTC)
 - build(deps): install the gmtask v0.22.0 targets in the test image.
 
