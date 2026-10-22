@@ -1,3 +1,6 @@
+## v0.12.2 (Thu, 22 Oct 2026 07:32:24 UTC)
+- build(deps): install the gmtask v0.22.0 targets in the test image.
+
 ## v0.12.1 (Thu, 22 Oct 2026 05:56:09 UTC)
 - chore(deps): update dependencies.
 
