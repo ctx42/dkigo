@@ -1,3 +1,6 @@
+## v0.12.1 (Thu, 22 Oct 2026 05:56:09 UTC)
+- chore(deps): update dependencies.
+
 ## v0.12.0 (Tue, 20 Oct 2026 13:10:05 UTC)
 - fix!: stop exporting the test image's build metadata.
 
