@@ -69,6 +69,14 @@ func Test_Dockerfile_gitSSHHosts(t *testing.T) {
 	assert.Equal(t, 3, have)
 	assert.NotContain(t, "github.com:", dkf)
 	assert.NotContain(t, "bitbucket.org", dkf)
+	rewrite := "" +
+		"        host=\"${ent%%=*}\" && ssh_host=\"${ent#*=}\" && \\\n" +
+		"        printf '[url \"git@%s:\"]\\n\\tinsteadOf = https://%s/\\n' " +
+		"\"$ssh_host\" \"$host\" >> /etc/gitconfig && \\\n" +
+		"        if [ \"$ssh_host\" != \"$host\" ]; then \\\n" +
+		"            printf '\\tinsteadOf = git@%s:\\n' \"$host\" >> /etc/gitconfig; \\\n"
+	assert.Equal(t, 2, strings.Count(dkf, rewrite))
+	assert.Contain(t, "        set -- \"$@\" \"${ent#*=}\"; \\\n", dkf)
 	want := "ssh-keyscan -t rsa \"$@\" >> /etc/ssh/ssh_known_hosts"
 	assert.Contain(t, want, dkf)
 }

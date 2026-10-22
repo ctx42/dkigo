@@ -55,11 +55,16 @@ RUN --mount=type=bind,from=project-ca,source=/ca,target=/ca \
         update-ca-trust extract; \
     fi
 
-# Reach the C42_BLD_GIT_SSH_HOSTS git hosts over SSH: rewrite each
-# https://<host>/ to git@<host>:.
+# Reach the C42_BLD_GIT_SSH_HOSTS git hosts over SSH. An entry is <host>, or
+# <host>=<ssh-host> for a host serving SSH under another name: rewrite each
+# https://<host>/ to git@<ssh-host>:, and git@<host>: too when the names differ.
 ARG C42_BLD_GIT_SSH_HOSTS
-RUN IFS=, && for host in $C42_BLD_GIT_SSH_HOSTS; do \
-        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$host" "$host" >> /etc/gitconfig; \
+RUN IFS=, && for ent in $C42_BLD_GIT_SSH_HOSTS; do \
+        host="${ent%%=*}" && ssh_host="${ent#*=}" && \
+        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$ssh_host" "$host" >> /etc/gitconfig && \
+        if [ "$ssh_host" != "$host" ]; then \
+            printf '\tinsteadOf = git@%s:\n' "$host" >> /etc/gitconfig; \
+        fi; \
     done
 
 # Defines root directory.
@@ -135,10 +140,14 @@ FROM src-base AS src-test
 RUN microdnf -y install wget tar openssh-clients && \
     microdnf -y clean all
 
-# Trust the RSA keys of the C42_BLD_GIT_SSH_HOSTS git hosts; /etc/gitconfig
-# rewriting them to SSH comes from "src-base".
+# Trust the RSA keys of the C42_BLD_GIT_SSH_HOSTS git hosts, of <ssh-host> for
+# a <host>=<ssh-host> entry; /etc/gitconfig rewriting them to SSH comes from
+# "src-base".
 ARG C42_BLD_GIT_SSH_HOSTS
-RUN --mount=type=ssh IFS=, && set -- $C42_BLD_GIT_SSH_HOSTS && \
+RUN --mount=type=ssh IFS=, && set -- && \
+    for ent in $C42_BLD_GIT_SSH_HOSTS; do \
+        set -- "$@" "${ent#*=}"; \
+    done && \
     if [ $# -gt 0 ]; then \
         ssh-keyscan -t rsa "$@" >> /etc/ssh/ssh_known_hosts; \
     fi
@@ -287,10 +296,16 @@ RUN microdnf -y install ca-certificates wget && \
 FROM $C42_BLD_IMG_RUNTIME AS base
 
 # Reach the C42_BLD_GIT_SSH_HOSTS git hosts over SSH (kept for parity with the
-# test image): rewrite each https://<host>/ to git@<host>:.
+# test image). An entry is <host>, or <host>=<ssh-host> for a host serving SSH
+# under another name: rewrite each https://<host>/ to git@<ssh-host>:, and
+# git@<host>: too when the names differ.
 ARG C42_BLD_GIT_SSH_HOSTS
-RUN IFS=, && for host in $C42_BLD_GIT_SSH_HOSTS; do \
-        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$host" "$host" >> /etc/gitconfig; \
+RUN IFS=, && for ent in $C42_BLD_GIT_SSH_HOSTS; do \
+        host="${ent%%=*}" && ssh_host="${ent#*=}" && \
+        printf '[url "git@%s:"]\n\tinsteadOf = https://%s/\n' "$ssh_host" "$host" >> /etc/gitconfig && \
+        if [ "$ssh_host" != "$host" ]; then \
+            printf '\tinsteadOf = git@%s:\n' "$host" >> /etc/gitconfig; \
+        fi; \
     done
 
 # Defines root directory.

@@ -179,14 +179,18 @@ configs/
 ### Git Hosts over SSH
 
 `C42_BLD_GIT_SSH_HOSTS` lists, comma-separated, the git hosts the images reach
-over SSH. Both images rewrite `https://<host>/` to `git@<host>:` in
-`/etc/gitconfig`, and the test image adds each host's RSA key to
-`/etc/ssh/ssh_known_hosts`. The default is `github.com,bitbucket.org`; an empty
-value configures no host.
+over SSH. An entry is `<host>`, or `<host>=<ssh-host>` for a host serving SSH
+under another name, as Bitbucket does at `ssh.bitbucket.org`. Both images
+rewrite `https://<host>/` to `git@<ssh-host>:` in `/etc/gitconfig`, and
+`git@<host>:` too when the names differ, so module paths and hard-coded SSH
+URLs keep the `<host>` name. The test image adds each SSH host's RSA key to
+`/etc/ssh/ssh_known_hosts`. The default is
+`github.com,bitbucket.org=ssh.bitbucket.org`; an empty value configures no
+host.
 
 ```ini
 # configs/project.conf
-C42_BLD_GIT_SSH_HOSTS=git.acme.io
+C42_BLD_GIT_SSH_HOSTS=git.acme.io,git.example.com=ssh.git.example.com
 ```
 
 ### Shared Lint Configuration
