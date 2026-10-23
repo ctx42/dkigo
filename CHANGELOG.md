@@ -1,3 +1,6 @@
+## v0.13.2 (Fri, 23 Oct 2026 20:50:56 UTC)
+- fix(build): match gomake and gmtask versions to go.mod.
+
 ## v0.13.1 (Fri, 23 Oct 2026 20:20:30 UTC)
 - chore(deps): update dependencies.
 
