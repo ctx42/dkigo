@@ -1,3 +1,6 @@
+## v0.13.1 (Fri, 23 Oct 2026 20:20:30 UTC)
+- chore(deps): update dependencies.
+
 ## v0.13.0 (Thu, 22 Oct 2026 14:18:24 UTC)
 - feat: map git hosts to a separate SSH host name.
 
